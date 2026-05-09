@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <title>PIMS Stock Management</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <style>
+
+        body{
+            background:#eef2f7;
+            font-family: Arial, sans-serif;
+        }
+
+        .topbar{
+            background:#0f172a;
+            color:white;
+            padding:15px 25px;
+        }
+
+        .stock-card{
+            border:none;
+            border-radius:15px;
+        }
+
+        .expired{
+            background:#fecaca !important;
+        }
+
+        .warning{
+            background:#fde68a !important;
+        }
+
+        .safe{
+            background:#bbf7d0 !important;
+        }
+
+        .status-badge{
+            padding:8px 12px;
+            border-radius:20px;
+            font-size:12px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<!-- TOP NAVBAR -->
+<div class="topbar d-flex justify-content-between align-items-center">
+
+    <h3>📦 PIMS Stock Management</h3>
+
+    <div>
+
+        <a href="/dashboard"
+           class="btn btn-light">
+
+            Dashboard
+
+        </a>
+
+        <a href="/logout"
+           class="btn btn-danger">
+
+            Logout
+
+        </a>
+
+    </div>
+
+</div>
+
+<div class="container-fluid mt-4">
+
+    <!-- ADD STOCK FORM -->
+    <div class="card stock-card shadow p-4 mb-4">
+
+        <h4 class="mb-4">➕ Add New Stock</h4>
+
+        <form th:action="@{/stock/save}"
+              method="post"
+              th:object="${stock}">
+
+            <div class="row">
+
+                <!-- MEDICINE -->
+                <div class="col-md-3">
+
+                    <label class="form-label">
+                        Medicine
+                    </label>
+
+                    <select th:field="*{medicine}"
+                            class="form-control">
+
+                        <option th:each="m : ${medicines}"
+                                th:value="${m}"
+                                th:text="${m.name}">
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- QUANTITY -->
+                <div class="col-md-2">
+
+                    <label class="form-label">
+                        Quantity
+                    </label>
+
+                    <input type="number"
+                           th:field="*{quantity}"
+                           class="form-control"
+                           placeholder="Qty">
+
+                </div>
+
+                <!-- REORDER -->
+                <div class="col-md-2">
+
+                    <label class="form-label">
+                        Reorder Level
+                    </label>
+
+                    <input type="number"
+                           th:field="*{reorderLevel}"
+                           class="form-control"
+                           placeholder="Level">
+
+                </div>
+
+                <!-- EXPIRY -->
+                <div class="col-md-3">
+
+                    <label class="form-label">
+                        Expiry Date
+                    </label>
+
+                    <input type="date"
+                           th:field="*{expiryDate}"
+                           class="form-control">
+
+                </div>
+
+                <!-- BUTTON -->
+                <div class="col-md-2 d-flex align-items-end">
+
+                    <button class="btn btn-success w-100">
+
+                        Add Stock
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- STOCK TABLE -->
+    <div class="card stock-card shadow p-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <h4>📋 Stock Inventory</h4>
+
+            <input type="text"
+                   id="searchBox"
+                   class="form-control w-25"
+                   placeholder="Search medicine">
+
+        </div>
+
+        <table class="table table-hover align-middle"
+               id="stockTable">
+
+            <thead class="table-dark">
+
+            <tr>
+
+                <th>Medicine</th>
+
+                <th>Quantity</th>
+
+                <th>Expiry Date</th>
+
+                <th>Status</th>
+
+            </tr>
+
+            </thead>
+
+            <tbody>
+
+            <tr th:each="s : ${stockList}"
+
+                th:class="${s.expiryDate.isBefore(T(java.time.LocalDate).now())}
+                ? 'expired'
+                : (${s.expiryDate.isBefore(T(java.time.LocalDate).now().plusDays(30))}
+                ? 'warning'
+                : 'safe')">
+
+                <!-- MEDICINE -->
+                <td th:text="${s.medicine.name}">
+                </td>
+
+                <!-- QUANTITY -->
+                <td th:text="${s.quantity}">
+                </td>
+
+                <!-- EXPIRY -->
+                <td th:text="${s.expiryDate}">
+                </td>
+
+                <!-- STATUS -->
+                <td>
+
+                    <!-- LOW STOCK -->
+                    <span th:if="${s.quantity <= s.reorderLevel}"
+                          class="badge bg-danger status-badge">
+
+                        Reorder Needed
+
+                    </span>
+
+                    <!-- STOCK OK -->
+                    <span th:if="${s.quantity > s.reorderLevel}"
+                          class="badge bg-success status-badge">
+
+                        Stock OK
+
+                    </span>
+
+                </td>
+
+            </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+    // SEARCH FILTER
+    document.getElementById("searchBox")
+        .addEventListener("keyup", function () {
+
+        let value = this.value.toLowerCase();
+
+        let rows = document.querySelectorAll("#stockTable tbody tr");
+
+        rows.forEach(row => {
+
+            let medicine =
+                row.cells[0].innerText.toLowerCase();
+
+            row.style.display =
+                medicine.includes(value)
+                ? ""
+                : "none";
+        });
+
+    });
+
+    // POPUP ALERT
+    setTimeout(() => {
+
+        alert("⚠ Check low stock and expiry medicines!");
+
+    }, 1500);
+
+</script>
+
+</body>
+</html>

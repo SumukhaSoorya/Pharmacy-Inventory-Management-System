@@ -1,0 +1,75 @@
+body{
+    background:#eef2f7;
+    font-family: Arial, sans-serif;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+    width:250px;
+    height:100vh;
+    background:#0f172a;
+    position:fixed;
+    left:0;
+    top:0;
+    color:white;
+    padding:20px;
+}
+
+.sidebar h3{
+    margin-bottom:30px;
+}
+
+.sidebar a{
+    display:block;
+    color:white;
+    text-decoration:none;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:10px;
+    transition:0.3s;
+}
+
+.sidebar a:hover{
+    background:#1e293b;
+}
+
+/* MAIN AREA */
+
+.main-content{
+    margin-left:260px;
+    padding:20px;
+}
+
+/* CARDS */
+
+.dashboard-card{
+    border:none;
+    border-radius:15px;
+    padding:20px;
+    color:white;
+}
+
+.sales-card{
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+}
+
+.stock-card{
+    background:linear-gradient(135deg,#16a34a,#15803d);
+}
+
+.expiry-card{
+    background:linear-gradient(135deg,#dc2626,#b91c1c);
+}
+
+/* DARK MODE */
+
+.dark-mode{
+    background:#0f172a !important;
+    color:white !important;
+}
+
+.dark-mode .card{
+    background:#1e293b !important;
+    color:white !important;
+}

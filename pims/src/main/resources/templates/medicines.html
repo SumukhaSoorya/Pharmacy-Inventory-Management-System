@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Medicines</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body { background: #eef2f7; }
+
+        .card {
+            border-radius: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container mt-4">
+
+    <h3>💊 Medicine Management</h3>
+
+    <!-- SEARCH -->
+    <form action="/medicines/search" method="get" class="d-flex mb-3">
+        <input type="text" name="name" class="form-control me-2" placeholder="Search medicine">
+        <button class="btn btn-primary">Search</button>
+    </form>
+
+    <!-- ADD FORM -->
+    <div class="card p-3 shadow mb-4">
+        <form th:action="@{/medicines/save}" method="post" th:object="${medicine}">
+            <div class="row">
+                <div class="col"><input th:field="*{name}" class="form-control" placeholder="Name"></div>
+                <div class="col"><input th:field="*{manufacturer}" class="form-control" placeholder="Manufacturer"></div>
+                <div class="col"><input th:field="*{category}" class="form-control" placeholder="Category"></div>
+                <div class="col"><input th:field="*{barcode}" class="form-control" placeholder="Barcode"></div>
+                <div class="col">
+
+    <input th:field="*{imageUrl}"
+           class="form-control"
+           placeholder="Medicine Image URL">
+
+</div>
+            </div>
+
+            <button class="btn btn-success mt-3">Add Medicine</button>
+            <div class="col">
+
+    <input th:field="*{imageUrl}"
+           class="form-control"
+           placeholder="Medicine Image URL">
+
+</div>
+        </form>
+    </div>
+
+    <!-- TABLE -->
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Manufacturer</th>
+                <th>Category</th>
+                <th>Barcode</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr th:each="m : ${medicines}">
+                <td th:text="${m.name}"></td>
+                <td th:text="${m.manufacturer}"></td>
+                <td th:text="${m.category}"></td>
+                <td th:text="${m.barcode}"></td>
+                <td>
+                    <a th:href="@{'/medicines/delete/' + ${m.id}}" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>
