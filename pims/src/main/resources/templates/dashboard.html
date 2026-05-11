@@ -191,7 +191,15 @@
 
 </h5>
 
-<canvas id="paymentChart"></canvas>
+<div class="d-flex justify-content-center">
+
+    <div style="width:350px;height:350px;">
+
+        <canvas id="paymentChart"></canvas>
+
+    </div>
+
+</div>
 
     </div>
 
@@ -254,19 +262,44 @@
             }]
         }
     });
-    new Chart(document.getElementById("paymentChart"), {
+   new Chart(document.getElementById("paymentChart"), {
 
-    type: 'doughnut',
+    type:'doughnut',
 
-    data: {
+    data:{
 
-        labels: ['Cash', 'Card', 'UPI'],
+        labels:[
+            'Cash',
+            'Card',
+            'UPI'
+        ],
 
-        datasets: [{
+        datasets:[{
 
-            data: [45, 25, 30]
+            data:[
+                45,
+                25,
+                30
+            ],
+
+            borderWidth:2
 
         }]
+    },
+
+    options:{
+
+        responsive:true,
+
+        maintainAspectRatio:false,
+
+        plugins:{
+
+            legend:{
+
+                position:'bottom'
+            }
+        }
     }
 });
 
