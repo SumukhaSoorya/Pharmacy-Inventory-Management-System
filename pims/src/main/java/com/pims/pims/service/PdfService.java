@@ -3,10 +3,12 @@ package com.pims.pims.service;
 import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.*;
+import com.pims.pims.service.QrService;
 
 import org.springframework.stereotype.Service;
 
 import java.io.FileNotFoundException;
+
 
 @Service
 public class PdfService {
@@ -59,9 +61,24 @@ public class PdfService {
                         "\nGrand Total: ₹100"
                 ).setBold()
         );
+        qrService.generateQR(
+        "Invoice ID: 1001"
+);
+
+document.add(
+        new Paragraph(
+                "\nQR Invoice Generated"
+        )
+);
 
         document.close();
 
         System.out.println("PDF Generated!");
     }
+    private final QrService qrService;
+
+public PdfService(QrService qrService) {
+    this.qrService = qrService;
+}
+
 }

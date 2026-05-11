@@ -97,9 +97,10 @@
             <div class="card shadow-sm p-3 mb-4 border-0">
 
                 <input type="text"
-                       id="searchBox"
-                       class="form-control form-control-lg search-box"
-                       placeholder="🔍 Search medicine or scan barcode">
+       id="searchBox"
+       class="form-control form-control-lg search-box"
+       placeholder="🔍 Scan barcode or search medicine"
+       autofocus>
 
             </div>
 
@@ -311,8 +312,26 @@
         document.getElementById("grandTotal")
             .innerText = total.toFixed(2);
     }
+    // BARCODE ENTER DETECTION
+
+document.getElementById("searchBox")
+.addEventListener("keypress", function(e){
+
+    if(e.key === "Enter"){
+
+        e.preventDefault();
+
+        alert(
+            "Barcode Scanned: "
+            + this.value
+        );
+
+        this.value = "";
+    }
+});
 
 </script>
+
 
 </body>
 </html>
