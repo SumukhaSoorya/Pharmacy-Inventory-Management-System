@@ -1,13 +1,13 @@
 package com.pims.pims.service;
 
-import com.pims.pims.model.Medicine;
-import com.pims.pims.model.Stock;
-import com.pims.pims.repository.StockRepository;
+import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.List;
+import com.pims.pims.model.Medicine;
+import com.pims.pims.model.Stock;
+import com.pims.pims.repository.StockRepository;
 
 @Service
 public class StockService {
@@ -48,6 +48,19 @@ public class StockService {
 
     return stock.getQuantity()
             <= stock.getReorderLevel();
+}
+public String generatePurchaseSuggestion(
+        Stock stock
+){
+
+    if(stock.getQuantity()
+            <= stock.getReorderLevel()){
+
+        return "Suggested PO: Reorder "
+                + stock.getMedicine().getName();
+    }
+
+    return "Stock OK";
 }
 
     // REDUCE STOCK AFTER BILL

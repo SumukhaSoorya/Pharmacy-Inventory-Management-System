@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <title>Purchase Orders</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <style>
+
+        body{
+            background:#eef2f7;
+        }
+
+        .po-card{
+            border:none;
+            border-radius:20px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container mt-5">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2>📦 Purchase Orders</h2>
+
+        <a href="/dashboard"
+           class="btn btn-dark">
+
+            Dashboard
+
+        </a>
+
+    </div>
+
+    <!-- FORM -->
+    <div class="card po-card shadow p-4 mb-5">
+
+        <h4 class="mb-4">
+
+            ➕ Create Purchase Order
+
+        </h4>
+
+        <form th:action="@{/purchase-orders/save}"
+              method="post"
+              th:object="${purchaseOrder}">
+
+            <div class="row">
+
+                <!-- SUPPLIER -->
+                <div class="col-md-3">
+
+                    <select th:field="*{supplier}"
+                            class="form-control">
+
+                        <option th:each="s : ${suppliers}"
+                                th:value="${s}"
+                                th:text="${s.name}">
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- MEDICINE -->
+                <div class="col-md-3">
+
+                    <input th:field="*{medicineName}"
+                           class="form-control"
+                           placeholder="Medicine Name">
+
+                </div>
+
+                <!-- QTY -->
+                <div class="col-md-2">
+
+                    <input type="number"
+                           th:field="*{quantity}"
+                           class="form-control"
+                           placeholder="Quantity">
+
+                </div>
+
+                <!-- TOTAL -->
+                <div class="col-md-2">
+
+                    <input type="number"
+                           th:field="*{totalAmount}"
+                           class="form-control"
+                           placeholder="Total">
+
+                </div>
+
+                <!-- BUTTON -->
+                <div class="col-md-2">
+
+                    <button class="btn btn-success w-100">
+
+                        Create
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- TABLE -->
+    <div class="card po-card shadow p-4">
+
+        <h4 class="mb-4">
+
+            📋 Order History
+
+        </h4>
+
+        <table class="table table-hover">
+
+            <thead class="table-dark">
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Supplier</th>
+
+                <th>Medicine</th>
+
+                <th>Qty</th>
+
+                <th>Total</th>
+
+                <th>Status</th>
+
+            </tr>
+
+            </thead>
+
+            <tbody>
+
+            <tr th:each="o : ${orders}">
+
+                <td th:text="${o.id}"></td>
+
+                <td th:text="${o.supplier.name}"></td>
+
+                <td th:text="${o.medicineName}"></td>
+
+                <td th:text="${o.quantity}"></td>
+
+                <td th:text="${o.totalAmount}"></td>
+
+                <td>
+
+                    <span class="badge bg-warning"
+                          th:text="${o.status}">
+                    </span>
+
+                </td>
+
+            </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+</body>
+</html>
