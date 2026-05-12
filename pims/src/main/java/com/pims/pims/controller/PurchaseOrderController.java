@@ -1,12 +1,16 @@
 package com.pims.pims.controller;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
 import com.pims.pims.model.PurchaseOrder;
 import com.pims.pims.service.PurchaseOrderService;
 import com.pims.pims.service.SupplierService;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/purchase-orders")
@@ -59,4 +63,16 @@ public class PurchaseOrderController {
 
         return "redirect:/purchase-orders";
     }
+    @PostMapping("/{id}/received")
+public String markReceived(
+        @PathVariable Long id
+) {
+
+    poService.updateStatus(
+            id,
+            "Received"
+    );
+
+    return "redirect:/purchase-orders";
+}
 }

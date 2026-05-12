@@ -31,4 +31,16 @@ public class PurchaseOrderService {
 
         return repo.findAll();
     }
+    public void updateStatus(Long id, String status) {
+
+    PurchaseOrder order =
+            repo.findById(id).orElse(null);
+
+    if (order != null) {
+
+        order.setStatus(status);
+
+        repo.save(order);
+    }
+}
 }

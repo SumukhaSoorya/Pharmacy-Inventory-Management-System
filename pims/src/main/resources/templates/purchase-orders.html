@@ -142,6 +142,7 @@
                 <th>Total</th>
 
                 <th>Status</th>
+                <th>Action</th>
 
             </tr>
 
@@ -168,6 +169,28 @@
                     </span>
 
                 </td>
+                <td>
+
+    <form th:if="${o.status == 'Dispatched'}"
+          th:action="@{'/purchase-orders/' + ${o.id} + '/received'}"
+          method="post">
+
+        <button class="btn btn-primary btn-sm">
+
+            Mark Received
+
+        </button>
+
+    </form>
+
+    <span th:if="${o.status != 'Dispatched'}"
+          class="text-muted">
+
+        Waiting
+
+    </span>
+
+</td>
 
             </tr>
 

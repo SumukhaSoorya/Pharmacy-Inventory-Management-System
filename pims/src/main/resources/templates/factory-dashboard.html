@@ -153,12 +153,16 @@
 
                 <td>
 
-                    <button class="btn btn-success btn-sm">
+                    <form th:action="@{'/factory/orders/' + ${o.id} + '/dispatch'}"
+      method="post">
 
-                        Mark Dispatched
+    <button class="btn btn-success btn-sm">
 
-                    </button>
+        Mark Dispatched
 
+    </button>
+
+</form>
                 </td>
 
             </tr>

@@ -9,8 +9,7 @@ public class BillItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private Medicine medicine;
+    private String medicineName;
 
     private int quantity;
 
@@ -20,18 +19,19 @@ public class BillItem {
 
     private double totalPrice;
 
-    // ===== GETTERS & SETTERS =====
+    @ManyToOne
+    private Bill bill;
 
     public Long getId() {
         return id;
     }
 
-    public Medicine getMedicine() {
-        return medicine;
+    public String getMedicineName() {
+        return medicineName;
     }
 
-    public void setMedicine(Medicine medicine) {
-        this.medicine = medicine;
+    public void setMedicineName(String medicineName) {
+        this.medicineName = medicineName;
     }
 
     public int getQuantity() {
@@ -64,5 +64,13 @@ public class BillItem {
 
     public void setTotalPrice(double totalPrice) {
         this.totalPrice = totalPrice;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
     }
 }

@@ -1,9 +1,12 @@
 package com.pims.pims.controller;
 
+import com.pims.pims.dto.BillRequest;
 import com.pims.pims.model.Bill;
 import com.pims.pims.service.BillService;
 import com.pims.pims.service.MedicineService;
 import com.pims.pims.service.PdfService;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,12 +17,9 @@ import org.springframework.web.bind.annotation.*;
 public class BillController {
 
     private final MedicineService medicineService;
-
     private final BillService billService;
-
     private final PdfService pdfService;
 
-    // CONSTRUCTOR
     public BillController(MedicineService medicineService,
                           BillService billService,
                           PdfService pdfService) {
@@ -29,41 +29,43 @@ public class BillController {
         this.pdfService = pdfService;
     }
 
-    // BILLING PAGE
     @GetMapping
     public String billingPage(Model model) {
 
-        model.addAttribute(
-                "medicines",
-                medicineService.getAll()
-        );
+        model.addAttribute("medicines", medicineService.getAll());
 
         return "billing";
     }
 
-    // SAVE BILL
     @PostMapping("/save")
-    public String saveBill(@ModelAttribute Bill bill) {
+    @ResponseBody
+    public Long saveBill(@RequestBody BillRequest request) {
 
-        billService.save(bill);
+        Bill bill = billService.createBill(request);
 
-        return "redirect:/dashboard";
+        return bill.getId();
     }
 
-    // GENERATE PDF
-    @GetMapping("/generate-pdf")
-    @ResponseBody
-    public String generatePdf() {
+    @GetMapping("/pdf/{id}")
+    public void downloadPdf(@PathVariable Long id,
+                            HttpServletResponse response) {
 
         try {
 
-            pdfService.generateBillPdf();
+            response.setContentType("application/pdf");
 
-            return "✅ PDF Generated Successfully!";
+            response.setHeader(
+                    "Content-Disposition",
+                    "attachment; filename=bill-" + id + ".pdf"
+            );
+
+            Bill bill = billService.getBill(id);
+
+            pdfService.generateBillPdf(bill, response);
 
         } catch (Exception e) {
 
-            return "❌ Error: " + e.getMessage();
+            e.printStackTrace();
         }
     }
 }

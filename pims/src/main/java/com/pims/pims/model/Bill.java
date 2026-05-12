@@ -2,6 +2,7 @@ package com.pims.pims.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -10,6 +11,8 @@ public class Bill {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private String customerName;
 
     private LocalDateTime billDate = LocalDateTime.now();
 
@@ -21,15 +24,19 @@ public class Bill {
 
     private String paymentMode;
 
-    private int loyaltyPointsEarned;
-
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<BillItem> items;
-
-    // ===== GETTERS & SETTERS =====
+    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL)
+    private List<BillItem> items = new ArrayList<>();
 
     public Long getId() {
         return id;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
     }
 
     public LocalDateTime getBillDate() {
@@ -70,14 +77,6 @@ public class Bill {
 
     public void setPaymentMode(String paymentMode) {
         this.paymentMode = paymentMode;
-    }
-
-    public int getLoyaltyPointsEarned() {
-        return loyaltyPointsEarned;
-    }
-
-    public void setLoyaltyPointsEarned(int loyaltyPointsEarned) {
-        this.loyaltyPointsEarned = loyaltyPointsEarned;
     }
 
     public List<BillItem> getItems() {

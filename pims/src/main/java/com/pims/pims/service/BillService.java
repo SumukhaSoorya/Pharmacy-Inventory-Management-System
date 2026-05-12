@@ -1,47 +1,62 @@
 package com.pims.pims.service;
 
-import com.pims.pims.model.*;
+import com.pims.pims.dto.BillItemRequest;
+import com.pims.pims.dto.BillRequest;
+import com.pims.pims.model.Bill;
+import com.pims.pims.model.BillItem;
 import com.pims.pims.repository.BillRepository;
+
 import org.springframework.stereotype.Service;
 
 @Service
 public class BillService {
 
-    private final BillRepository repo;
-    private final StockService stockService;
+    private final BillRepository billRepository;
 
-    public BillService(BillRepository repo, StockService stockService) {
-        this.repo = repo;
-        this.stockService = stockService;
+    public BillService(BillRepository billRepository) {
+        this.billRepository = billRepository;
     }
 
-    public Bill save(Bill bill) {
+    public Bill createBill(BillRequest request) {
+
+        Bill bill = new Bill();
+
+        bill.setCustomerName(request.getCustomerName());
+        bill.setPaymentMode(request.getPaymentMode());
+        bill.setDiscount(request.getDiscount());
 
         double total = 0;
-        double gst = 0;
+        double gstTotal = 0;
 
-        for (BillItem item : bill.getItems()) {
+        for (BillItemRequest itemRequest : request.getItems()) {
 
-            double itemTotal = item.getQuantity() * item.getUnitPrice();
+            BillItem item = new BillItem();
 
-            double itemGST = itemTotal * 0.12;
+            double gst = itemRequest.getUnitPrice() * itemRequest.getQuantity() * 0.12;
+            double itemTotal = itemRequest.getUnitPrice() * itemRequest.getQuantity() + gst;
 
-            item.setGst(itemGST);
-            item.setTotalPrice(itemTotal + itemGST);
+            item.setMedicineName(itemRequest.getMedicineName());
+            item.setQuantity(itemRequest.getQuantity());
+            item.setUnitPrice(itemRequest.getUnitPrice());
+            item.setGst(gst);
+            item.setTotalPrice(itemTotal);
+            item.setBill(bill);
+
+            bill.getItems().add(item);
 
             total += itemTotal;
-            gst += itemGST;
-
-            // REDUCE STOCK
-            stockService.reduceStock(item.getMedicine(), item.getQuantity());
+            gstTotal += gst;
         }
 
+        total = total - request.getDiscount();
+
         bill.setTotalAmount(total);
-        bill.setGstAmount(gst);
+        bill.setGstAmount(gstTotal);
 
-        // LOYALTY
-        bill.setLoyaltyPointsEarned((int) total / 100);
+        return billRepository.save(bill);
+    }
 
-        return repo.save(bill);
+    public Bill getBill(Long id) {
+        return billRepository.findById(id).orElse(null);
     }
 }
