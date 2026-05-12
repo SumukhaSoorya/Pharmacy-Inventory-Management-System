@@ -200,12 +200,10 @@
             <tbody>
 
             <tr th:each="s : ${stockList}"
-
-                th:class="${s.expiryDate.isBefore(T(java.time.LocalDate).now())}
-                ? 'expired'
-                : (${s.expiryDate.isBefore(T(java.time.LocalDate).now().plusDays(30))}
-                ? 'warning'
-                : 'safe')">
+th:class="${s.expiryDate.isBefore(T(java.time.LocalDate).now())} ? 'expired' :
+(!s.expiryDate.isBefore(T(java.time.LocalDate).now()) 
+&& s.expiryDate.isBefore(T(java.time.LocalDate).now().plusDays(30))) 
+? 'warning' : 'safe'">
 
                 <!-- MEDICINE -->
                 <td th:text="${s.medicine.name}">
@@ -218,6 +216,31 @@
                 <!-- EXPIRY -->
                 <td th:text="${s.expiryDate}">
                 </td>
+                <td>
+
+    <span th:if="${s.expiryDate.isBefore(T(java.time.LocalDate).now())}"
+          class="badge bg-danger">
+
+        Expired
+
+    </span>
+
+    <span th:if="${!s.expiryDate.isBefore(T(java.time.LocalDate).now()) 
+    && s.expiryDate.isBefore(T(java.time.LocalDate).now().plusDays(30))}"
+          class="badge bg-warning text-dark">
+
+        Expiring Soon
+
+    </span>
+
+    <span th:if="${s.expiryDate.isAfter(T(java.time.LocalDate).now().plusDays(30))}"
+          class="badge bg-success">
+
+        Safe
+
+    </span>
+
+</td>
 
                 <!-- STATUS -->
                 <td>

@@ -1,9 +1,15 @@
 package com.pims.pims.model;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class Bill {
@@ -21,6 +27,7 @@ public class Bill {
     private double gstAmount;
 
     private double discount;
+    private int loyaltyPointsEarned = 0;
 
     private String paymentMode;
 
@@ -86,4 +93,11 @@ public class Bill {
     public void setItems(List<BillItem> items) {
         this.items = items;
     }
+    public int getLoyaltyPointsEarned() {
+    return loyaltyPointsEarned;
+}
+
+public void setLoyaltyPointsEarned(int loyaltyPointsEarned) {
+    this.loyaltyPointsEarned = loyaltyPointsEarned;
+}
 }
