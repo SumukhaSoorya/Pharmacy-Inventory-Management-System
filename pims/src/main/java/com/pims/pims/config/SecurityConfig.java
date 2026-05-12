@@ -45,7 +45,30 @@ public class SecurityConfig {
 
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/dashboard", true)
+                .successHandler((request, response, authentication) -> {
+
+    var authorities =
+            authentication.getAuthorities();
+
+    boolean isFactory =
+            authorities.stream()
+            .anyMatch(a ->
+                    a.getAuthority()
+                    .equals("ROLE_FACTORY"));
+
+    if(isFactory){
+
+        response.sendRedirect(
+                "/factory/dashboard"
+        );
+
+    } else {
+
+        response.sendRedirect(
+                "/dashboard"
+        );
+    }
+})
                 .permitAll()
             )
 
