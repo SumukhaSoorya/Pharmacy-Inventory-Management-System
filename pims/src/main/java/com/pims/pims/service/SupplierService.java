@@ -10,19 +10,25 @@ import java.util.List;
 @Service
 public class SupplierService {
 
-    private final SupplierRepository repo;
+    private final SupplierRepository supplierRepository;
 
-    public SupplierService(SupplierRepository repo) {
-        this.repo = repo;
+    public SupplierService(SupplierRepository supplierRepository) {
+        this.supplierRepository = supplierRepository;
     }
 
-    // SAVE
     public Supplier save(Supplier supplier) {
-        return repo.save(supplier);
+        return supplierRepository.save(supplier);
     }
 
-    // GET ALL
     public List<Supplier> getAll() {
-        return repo.findAll();
+        return supplierRepository.findAll();
+    }
+
+    public Supplier getById(Long id) {
+        return supplierRepository.findById(id).orElse(null);
+    }
+
+    public void delete(Long id) {
+        supplierRepository.deleteById(id);
     }
 }

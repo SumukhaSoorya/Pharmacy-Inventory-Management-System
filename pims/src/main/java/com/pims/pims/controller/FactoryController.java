@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.pims.pims.service.PurchaseOrderService;
 
@@ -15,34 +16,56 @@ public class FactoryController {
 
     private final PurchaseOrderService poService;
 
-    public FactoryController(
-            PurchaseOrderService poService
-    ) {
-
+    public FactoryController(PurchaseOrderService poService) {
         this.poService = poService;
     }
-    @PostMapping("/orders/{id}/dispatch")
-public String markDispatched(
-        @PathVariable Long id
-) {
 
-    poService.updateStatus(
-            id,
-            "Dispatched"
-    );
-
-    return "redirect:/factory/dashboard";
-}
-
-    // DASHBOARD
     @GetMapping("/dashboard")
-    public String dashboard(Model model){
+    public String dashboard(Model model) {
 
-        model.addAttribute(
-                "orders",
-                poService.getAll()
-        );
+        model.addAttribute("orders", poService.getAll());
 
         return "factory-dashboard";
+    }
+
+    @PostMapping("/orders/{id}/accept")
+    public String acceptOrder(@PathVariable Long id) {
+
+        poService.updateStatusWithRemark(
+                id,
+                "Accepted",
+                "Order accepted by factory"
+        );
+
+        return "redirect:/factory/dashboard";
+    }
+
+    @PostMapping("/orders/{id}/reject")
+    public String rejectOrder(@PathVariable Long id,
+                              @RequestParam(required = false) String remark) {
+
+        if (remark == null || remark.isBlank()) {
+            remark = "Order rejected by factory";
+        }
+
+        poService.updateStatusWithRemark(
+                id,
+                "Rejected",
+                remark
+        );
+
+        return "redirect:/factory/dashboard";
+    }
+
+    @PostMapping("/orders/{id}/dispatch")
+    public String dispatchOrder(@PathVariable Long id) {
+
+        poService.updateStatusWithRemark(
+                id,
+                "Dispatched",
+                "Order dispatched by factory"
+        );
+
+        return "redirect:/factory/dashboard";
     }
 }

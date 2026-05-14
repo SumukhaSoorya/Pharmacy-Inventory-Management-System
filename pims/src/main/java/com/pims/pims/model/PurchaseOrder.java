@@ -1,21 +1,22 @@
 package com.pims.pims.model;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
 
 @Entity
+@Table(name = "purchase_order")
 public class PurchaseOrder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Supplier connected to this order
     @ManyToOne
+    @JoinColumn(name = "supplier_id")
     private Supplier supplier;
 
-    private LocalDate orderDate =
-            LocalDate.now();
+    private LocalDate orderDate = LocalDate.now();
 
     private String medicineName;
 
@@ -23,9 +24,10 @@ public class PurchaseOrder {
 
     private double totalAmount;
 
-    private String status;
+    // Pending, Accepted, Rejected, Dispatched, Received
+    private String status = "Pending";
 
-    // GETTERS & SETTERS
+    private String factoryRemark;
 
     public Long getId() {
         return id;
@@ -77,5 +79,13 @@ public class PurchaseOrder {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getFactoryRemark() {
+        return factoryRemark;
+    }
+
+    public void setFactoryRemark(String factoryRemark) {
+        this.factoryRemark = factoryRemark;
     }
 }

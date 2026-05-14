@@ -1,11 +1,17 @@
 package com.pims.pims.config;
 
 import com.pims.pims.service.CustomUserDetailsService;
-import org.springframework.context.annotation.*;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.crypto.bcrypt.*;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -17,64 +23,106 @@ public class SecurityConfig {
         this.userDetailsService = userDetailsService;
     }
 
+    // PASSWORD ENCODER
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // AUTHENTICATION PROVIDER
     @Bean
     public DaoAuthenticationProvider authProvider() {
-        DaoAuthenticationProvider auth = new DaoAuthenticationProvider();
+
+        DaoAuthenticationProvider auth =
+                new DaoAuthenticationProvider();
+
         auth.setUserDetailsService(userDetailsService);
         auth.setPasswordEncoder(passwordEncoder());
+
         return auth;
     }
 
+    // SECURITY RULES
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http)
+            throws Exception {
 
         http
-            .csrf(csrf -> csrf.disable())
+                // We keep CSRF disabled for now because your forms are simple.
+                // Later, after project is stable, we can enable CSRF properly.
+                .csrf(csrf -> csrf.disable())
 
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/register", "/css/**", "/js/**").permitAll()
-                .requestMatchers("/factory/**").hasAuthority("ROLE_FACTORY")
-                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-                .anyRequest().authenticated()
-            )
+                .authenticationProvider(authProvider())
 
-            .formLogin(form -> form
-                .loginPage("/login")
-                .successHandler((request, response, authentication) -> {
+                .authorizeHttpRequests(auth -> auth
 
-    var authorities =
-            authentication.getAuthorities();
+                        // PUBLIC PAGES
+                        .requestMatchers(
+                                "/login",
+                                "/register",
+                                "/register/**",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/webjars/**"
+                        ).permitAll()
 
-    boolean isFactory =
-            authorities.stream()
-            .anyMatch(a ->
-                    a.getAuthority()
-                    .equals("ROLE_FACTORY"));
+                        // FACTORY ONLY
+                        .requestMatchers(
+                                "/factory/**"
+                        ).hasAuthority("ROLE_FACTORY")
 
-    if(isFactory){
+                        // ADMIN / PHARMACIST ONLY
+                        .requestMatchers(
+                                "/dashboard",
+                                "/medicines/**",
+                                "/stock/**",
+                                "/billing/**",
+                                "/purchase-orders/**",
+                                "/reports/**",
+                                "/suppliers/**"
+                        ).hasAuthority("ROLE_ADMIN")
 
-        response.sendRedirect(
-                "/factory/dashboard"
-        );
+                        // ANY OTHER PAGE NEEDS LOGIN
+                        .anyRequest().authenticated()
+                )
 
-    } else {
+                .formLogin(form -> form
 
-        response.sendRedirect(
-                "/dashboard"
-        );
-    }
-})
-                .permitAll()
-            )
+                        .loginPage("/login")
 
-            .logout(logout -> logout
-                .logoutSuccessUrl("/login")
-            );
+                        .successHandler((request, response, authentication) -> {
+
+                            boolean isFactory =
+                                    authentication.getAuthorities()
+                                            .stream()
+                                            .anyMatch(a ->
+                                                    a.getAuthority()
+                                                            .equals("ROLE_FACTORY")
+                                            );
+
+                            if (isFactory) {
+
+                                response.sendRedirect(
+                                        "/factory/dashboard"
+                                );
+
+                            } else {
+
+                                response.sendRedirect(
+                                        "/dashboard"
+                                );
+                            }
+                        })
+
+                        .permitAll()
+                )
+
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout")
+                        .permitAll()
+                );
 
         return http.build();
     }

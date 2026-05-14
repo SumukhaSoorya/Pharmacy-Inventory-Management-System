@@ -19,67 +19,67 @@ public class BillService {
 
     public Bill createBill(BillRequest request) {
 
-        Bill bill = new Bill();
+    Bill bill = new Bill();
 
-        bill.setCustomerName(request.getCustomerName());
-        bill.setPaymentMode(request.getPaymentMode());
-        bill.setDiscount(request.getDiscount());
+    bill.setCustomerName(request.getCustomerName());
+    bill.setPaymentMode(request.getPaymentMode());
+    bill.setDiscount(request.getDiscount());
 
-        double total = 0;
-        double gstTotal = 0;
+    double total = 0;
+    double gstTotal = 0;
 
-        for (BillItemRequest itemRequest : request.getItems()) {
+    for (BillItemRequest itemRequest : request.getItems()) {
 
-            BillItem item = new BillItem();
+        BillItem item = new BillItem();
 
-            double itemSubtotal =
-                    itemRequest.getUnitPrice()
-                            * itemRequest.getQuantity();
+        double itemSubtotal =
+                itemRequest.getUnitPrice()
+                * itemRequest.getQuantity();
 
-            double gst =
-                    itemSubtotal * 0.12;
+        double gst =
+                itemSubtotal * 0.12;
 
-            double itemTotal =
-                    itemSubtotal + gst;
+        double itemTotal =
+                itemSubtotal + gst;
 
-            item.setMedicineName(
-                    itemRequest.getMedicineName()
-            );
-
-            item.setQuantity(
-                    itemRequest.getQuantity()
-            );
-
-            item.setUnitPrice(
-                    itemRequest.getUnitPrice()
-            );
-
-            item.setGst(gst);
-
-            item.setTotalPrice(itemTotal);
-
-            item.setBill(bill);
-
-            bill.getItems().add(item);
-
-            total += itemTotal;
-            gstTotal += gst;
-        }
-
-        total =
-                total - request.getDiscount();
-
-        bill.setTotalAmount(total);
-
-        bill.setGstAmount(gstTotal);
-
-        bill.setLoyaltyPointsEarned(
-                (int) (total / 100)
+        item.setMedicineName(
+                itemRequest.getMedicineName()
         );
 
-        return billRepository.save(bill);
+        item.setQuantity(
+                itemRequest.getQuantity()
+        );
+
+        item.setUnitPrice(
+                itemRequest.getUnitPrice()
+        );
+
+        item.setGst(gst);
+
+        item.setTotalPrice(itemTotal);
+
+        item.setBill(bill);
+
+        bill.getItems().add(item);
+
+        total += itemTotal;
+
+        gstTotal += gst;
     }
 
+    total =
+            total - request.getDiscount();
+
+    bill.setTotalAmount(total);
+
+    bill.setGstAmount(gstTotal);
+
+    bill.setLoyaltyPointsEarned(
+            (int) (total / 100)
+    );
+
+    return billRepository.save(bill);
+}
     public Bill getBill(Long id) {
         return billRepository.findById(id).orElse(null);
     }

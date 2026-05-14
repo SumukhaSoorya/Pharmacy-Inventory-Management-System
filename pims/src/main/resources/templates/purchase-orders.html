@@ -1,113 +1,107 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-
     <title>Purchase Orders</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
           rel="stylesheet">
 
     <style>
-
-        body{
-            background:#eef2f7;
+        body {
+            background: #eef2f7;
         }
 
-        .po-card{
-            border:none;
-            border-radius:20px;
+        .po-card {
+            border: none;
+            border-radius: 20px;
         }
 
+        .badge {
+            font-size: 13px;
+            padding: 8px 12px;
+        }
     </style>
-
 </head>
 
 <body>
 
 <div class="container mt-5">
 
-    <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>📦 Purchase Orders</h2>
+            <p class="text-muted">Create and track orders sent to factory suppliers</p>
+        </div>
 
-        <h2>📦 Purchase Orders</h2>
-
-        <a href="/dashboard"
-           class="btn btn-dark">
-
-            Dashboard
-
-        </a>
-
+        <a href="/dashboard" class="btn btn-dark">Dashboard</a>
     </div>
 
-    <!-- FORM -->
+    <div th:if="${success != null}" class="alert alert-success">
+        Purchase order placed successfully.
+    </div>
+
+    <div th:if="${error != null}" class="alert alert-danger">
+        Could not place purchase order. Please check supplier and try again.
+    </div>
+
+    <!-- CREATE ORDER -->
     <div class="card po-card shadow p-4 mb-5">
 
-        <h4 class="mb-4">
+        <h4 class="mb-4">➕ Create Purchase Order</h4>
 
-            ➕ Create Purchase Order
+        <form action="/purchase-orders/save" method="post">
 
-        </h4>
+            <div class="row g-3">
 
-        <form th:action="@{/purchase-orders/save}"
-              method="post"
-              th:object="${purchaseOrder}">
-
-            <div class="row">
-
-                <!-- SUPPLIER -->
                 <div class="col-md-3">
+                    <label class="form-label">Supplier</label>
 
-                    <select th:field="*{supplier}"
-                            class="form-control">
+                    <select name="supplierId" class="form-control" required>
+                        <option value="">Select Supplier</option>
 
                         <option th:each="s : ${suppliers}"
-                                th:value="${s}"
+                                th:value="${s.id}"
                                 th:text="${s.name}">
                         </option>
-
                     </select>
-
                 </div>
 
-                <!-- MEDICINE -->
                 <div class="col-md-3">
+                    <label class="form-label">Medicine Name</label>
 
-                    <input th:field="*{medicineName}"
+                    <input name="medicineName"
                            class="form-control"
-                           placeholder="Medicine Name">
-
+                           placeholder="Medicine Name"
+                           required>
                 </div>
 
-                <!-- QTY -->
                 <div class="col-md-2">
+                    <label class="form-label">Quantity</label>
 
                     <input type="number"
-                           th:field="*{quantity}"
+                           name="quantity"
                            class="form-control"
-                           placeholder="Quantity">
-
+                           placeholder="Qty"
+                           min="1"
+                           required>
                 </div>
 
-                <!-- TOTAL -->
                 <div class="col-md-2">
+                    <label class="form-label">Total Amount</label>
 
                     <input type="number"
-                           th:field="*{totalAmount}"
+                           step="0.01"
+                           name="totalAmount"
                            class="form-control"
-                           placeholder="Total">
-
+                           placeholder="Total"
+                           min="0"
+                           required>
                 </div>
 
-                <!-- BUTTON -->
-                <div class="col-md-2">
-
+                <div class="col-md-2 d-flex align-items-end">
                     <button class="btn btn-success w-100">
-
-                        Create
-
+                        Place Order
                     </button>
-
                 </div>
 
             </div>
@@ -116,81 +110,82 @@
 
     </div>
 
-    <!-- TABLE -->
+    <!-- ORDER TABLE -->
     <div class="card po-card shadow p-4">
 
-        <h4 class="mb-4">
+        <h4 class="mb-4">📋 Order Tracking</h4>
 
-            📋 Order History
-
-        </h4>
-
-        <table class="table table-hover">
+        <table class="table table-hover align-middle">
 
             <thead class="table-dark">
-
             <tr>
-
                 <th>ID</th>
-
                 <th>Supplier</th>
-
                 <th>Medicine</th>
-
                 <th>Qty</th>
-
                 <th>Total</th>
-
                 <th>Status</th>
+                <th>Factory Remark</th>
                 <th>Action</th>
-
             </tr>
-
             </thead>
 
             <tbody>
+
+            <tr th:if="${#lists.isEmpty(orders)}">
+                <td colspan="8" class="text-center text-muted">
+                    No purchase orders placed yet.
+                </td>
+            </tr>
 
             <tr th:each="o : ${orders}">
 
                 <td th:text="${o.id}"></td>
 
-                <td th:text="${o.supplier.name}"></td>
+                <td th:text="${o.supplier != null ? o.supplier.name : 'No Supplier'}"></td>
 
                 <td th:text="${o.medicineName}"></td>
 
                 <td th:text="${o.quantity}"></td>
 
-                <td th:text="${o.totalAmount}"></td>
-
                 <td>
-
-                    <span class="badge bg-warning"
-                          th:text="${o.status}">
-                    </span>
-
+                    ₹<span th:text="${o.totalAmount}"></span>
                 </td>
+
                 <td>
+                    <span th:if="${o.status == 'Pending'}"
+                          class="badge bg-warning text-dark">Pending</span>
 
-    <form th:if="${o.status == 'Dispatched'}"
-          th:action="@{'/purchase-orders/' + ${o.id} + '/received'}"
-          method="post">
+                    <span th:if="${o.status == 'Accepted'}"
+                          class="badge bg-primary">Accepted</span>
 
-        <button class="btn btn-primary btn-sm">
+                    <span th:if="${o.status == 'Rejected'}"
+                          class="badge bg-danger">Rejected</span>
 
-            Mark Received
+                    <span th:if="${o.status == 'Dispatched'}"
+                          class="badge bg-info text-dark">Dispatched</span>
 
-        </button>
+                    <span th:if="${o.status == 'Received'}"
+                          class="badge bg-success">Received</span>
+                </td>
 
-    </form>
+                <td th:text="${o.factoryRemark != null ? o.factoryRemark : '-'}"></td>
 
-    <span th:if="${o.status != 'Dispatched'}"
-          class="text-muted">
+                <td>
+                    <form th:if="${o.status == 'Dispatched'}"
+                          th:action="@{'/purchase-orders/' + ${o.id} + '/received'}"
+                          method="post">
 
-        Waiting
+                        <button class="btn btn-success btn-sm">
+                            Mark Received
+                        </button>
+                    </form>
 
-    </span>
-
-</td>
+                    <span th:if="${o.status != 'Dispatched'}"
+                          class="text-muted">
+                        No action
+                    </span>
+                </td>
 
             </tr>
 

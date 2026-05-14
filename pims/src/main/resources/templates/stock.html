@@ -1,161 +1,111 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-
-    <title>PIMS Stock Management</title>
+    <title>Stock</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
           rel="stylesheet">
 
     <style>
-
-        body{
-            background:#eef2f7;
-            font-family: Arial, sans-serif;
+        body {
+            background: #eef2f7;
         }
 
-        .topbar{
-            background:#0f172a;
-            color:white;
-            padding:15px 25px;
+        .stock-card {
+            border: none;
+            border-radius: 20px;
         }
 
-        .stock-card{
-            border:none;
-            border-radius:15px;
+        .expired {
+            background-color: #ffe1e1 !important;
         }
 
-        .expired{
-            background:#fecaca !important;
+        .warning {
+            background-color: #fff0cc !important;
         }
 
-        .warning{
-            background:#fde68a !important;
+        .safe {
+            background-color: #e2ffe2 !important;
         }
-
-        .safe{
-            background:#bbf7d0 !important;
-        }
-
-        .status-badge{
-            padding:8px 12px;
-            border-radius:20px;
-            font-size:12px;
-        }
-
     </style>
-
 </head>
 
 <body>
 
-<!-- TOP NAVBAR -->
-<div class="topbar d-flex justify-content-between align-items-center">
+<div class="container mt-5">
 
-    <h3>📦 PIMS Stock Management</h3>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>📦 Stock Management</h2>
+            <p class="text-muted">Add stock batches and track expiry status</p>
+        </div>
 
-    <div>
-
-        <a href="/dashboard"
-           class="btn btn-light">
-
-            Dashboard
-
-        </a>
-
-        <a href="/logout"
-           class="btn btn-danger">
-
-            Logout
-
-        </a>
-
+        <a href="/dashboard" class="btn btn-dark">Dashboard</a>
     </div>
 
-</div>
+    <div th:if="${success != null}" class="alert alert-success">
+        Stock added successfully.
+    </div>
 
-<div class="container-fluid mt-4">
+    <div th:if="${error != null}" class="alert alert-danger">
+        Could not add stock. Please select medicine and try again.
+    </div>
 
-    <!-- ADD STOCK FORM -->
-    <div class="card stock-card shadow p-4 mb-4">
+    <!-- ADD STOCK -->
+    <div class="card stock-card shadow p-4 mb-5">
 
-        <h4 class="mb-4">➕ Add New Stock</h4>
+        <h4 class="mb-4">➕ Add Stock</h4>
 
-        <form th:action="@{/stock/save}"
-              method="post"
-              th:object="${stock}">
+        <form action="/stock/save" method="post">
 
-            <div class="row">
+            <div class="row g-3">
 
-                <!-- MEDICINE -->
                 <div class="col-md-3">
+                    <label class="form-label">Medicine</label>
 
-                    <label class="form-label">
-                        Medicine
-                    </label>
-
-                    <select th:field="*{medicine}"
-                            class="form-control">
+                    <select name="medicineId" class="form-control" required>
+                        <option value="">Select Medicine</option>
 
                         <option th:each="m : ${medicines}"
-                                th:value="${m}"
+                                th:value="${m.id}"
                                 th:text="${m.name}">
                         </option>
-
                     </select>
-
                 </div>
 
-                <!-- QUANTITY -->
                 <div class="col-md-2">
-
-                    <label class="form-label">
-                        Quantity
-                    </label>
+                    <label class="form-label">Quantity</label>
 
                     <input type="number"
-                           th:field="*{quantity}"
+                           name="quantity"
                            class="form-control"
-                           placeholder="Qty">
-
+                           min="1"
+                           required>
                 </div>
 
-                <!-- REORDER -->
                 <div class="col-md-2">
-
-                    <label class="form-label">
-                        Reorder Level
-                    </label>
+                    <label class="form-label">Reorder Level</label>
 
                     <input type="number"
-                           th:field="*{reorderLevel}"
+                           name="reorderLevel"
                            class="form-control"
-                           placeholder="Level">
-
+                           min="0"
+                           required>
                 </div>
 
-                <!-- EXPIRY -->
                 <div class="col-md-3">
-
-                    <label class="form-label">
-                        Expiry Date
-                    </label>
+                    <label class="form-label">Expiry Date</label>
 
                     <input type="date"
-                           th:field="*{expiryDate}"
-                           class="form-control">
-
+                           name="expiryDate"
+                           class="form-control"
+                           required>
                 </div>
 
-                <!-- BUTTON -->
                 <div class="col-md-2 d-flex align-items-end">
-
                     <button class="btn btn-success w-100">
-
                         Add Stock
-
                     </button>
-
                 </div>
 
             </div>
@@ -167,100 +117,58 @@
     <!-- STOCK TABLE -->
     <div class="card stock-card shadow p-4">
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-4">📋 Stock List</h4>
 
-            <h4>📋 Stock Inventory</h4>
-
-            <input type="text"
-                   id="searchBox"
-                   class="form-control w-25"
-                   placeholder="Search medicine">
-
-        </div>
-
-        <table class="table table-hover align-middle"
-               id="stockTable">
+        <table class="table table-bordered align-middle">
 
             <thead class="table-dark">
-
             <tr>
-
                 <th>Medicine</th>
-
-                <th>Quantity</th>
-
-                <th>Expiry Date</th>
-
+                <th>Qty</th>
+                <th>Reorder Level</th>
+                <th>Expiry</th>
                 <th>Status</th>
-
             </tr>
-
             </thead>
 
             <tbody>
 
+            <tr th:if="${#lists.isEmpty(stockList)}">
+                <td colspan="5" class="text-center text-muted">
+                    No stock added yet.
+                </td>
+            </tr>
+
             <tr th:each="s : ${stockList}"
-th:class="${s.expiryDate.isBefore(T(java.time.LocalDate).now())} ? 'expired' :
-(!s.expiryDate.isBefore(T(java.time.LocalDate).now()) 
-&& s.expiryDate.isBefore(T(java.time.LocalDate).now().plusDays(30))) 
-? 'warning' : 'safe'">
+                th:class="${s.expiryDate.isBefore(T(java.time.LocalDate).now())} ? 'expired' :
+                          (!s.expiryDate.isBefore(T(java.time.LocalDate).now()) &&
+                          s.expiryDate.isBefore(T(java.time.LocalDate).now().plusDays(30))) ? 'warning' : 'safe'">
 
-                <!-- MEDICINE -->
-                <td th:text="${s.medicine.name}">
-                </td>
+                <td th:text="${s.medicine != null ? s.medicine.name : 'No Medicine'}"></td>
 
-                <!-- QUANTITY -->
-                <td th:text="${s.quantity}">
-                </td>
+                <td th:text="${s.quantity}"></td>
 
-                <!-- EXPIRY -->
-                <td th:text="${s.expiryDate}">
-                </td>
+                <td th:text="${s.reorderLevel}"></td>
+
+                <td th:text="${s.expiryDate}"></td>
+
                 <td>
-
-    <span th:if="${s.expiryDate.isBefore(T(java.time.LocalDate).now())}"
-          class="badge bg-danger">
-
-        Expired
-
-    </span>
-
-    <span th:if="${!s.expiryDate.isBefore(T(java.time.LocalDate).now()) 
-    && s.expiryDate.isBefore(T(java.time.LocalDate).now().plusDays(30))}"
-          class="badge bg-warning text-dark">
-
-        Expiring Soon
-
-    </span>
-
-    <span th:if="${s.expiryDate.isAfter(T(java.time.LocalDate).now().plusDays(30))}"
-          class="badge bg-success">
-
-        Safe
-
-    </span>
-
-</td>
-
-                <!-- STATUS -->
-                <td>
-
-                    <!-- LOW STOCK -->
-                    <span th:if="${s.quantity <= s.reorderLevel}"
-                          class="badge bg-danger status-badge">
-
-                        Reorder Needed
-
+                    <span th:if="${s.expiryDate.isBefore(T(java.time.LocalDate).now())}"
+                          class="badge bg-danger">
+                        Expired
                     </span>
 
-                    <!-- STOCK OK -->
-                    <span th:if="${s.quantity > s.reorderLevel}"
-                          class="badge bg-success status-badge">
-
-                        Stock OK
-
+                    <span th:if="${!s.expiryDate.isBefore(T(java.time.LocalDate).now()) &&
+                                  s.expiryDate.isBefore(T(java.time.LocalDate).now().plusDays(30))}"
+                          class="badge bg-warning text-dark">
+                        Expiring Soon
                     </span>
 
+                    <span th:if="${s.expiryDate.isAfter(T(java.time.LocalDate).now().plusDays(30)) ||
+                                  s.expiryDate.isEqual(T(java.time.LocalDate).now().plusDays(30))}"
+                          class="badge bg-success">
+                        Safe
+                    </span>
                 </td>
 
             </tr>
@@ -272,38 +180,6 @@ th:class="${s.expiryDate.isBefore(T(java.time.LocalDate).now())} ? 'expired' :
     </div>
 
 </div>
-
-<script>
-
-    // SEARCH FILTER
-    document.getElementById("searchBox")
-        .addEventListener("keyup", function () {
-
-        let value = this.value.toLowerCase();
-
-        let rows = document.querySelectorAll("#stockTable tbody tr");
-
-        rows.forEach(row => {
-
-            let medicine =
-                row.cells[0].innerText.toLowerCase();
-
-            row.style.display =
-                medicine.includes(value)
-                ? ""
-                : "none";
-        });
-
-    });
-
-    // POPUP ALERT
-    setTimeout(() => {
-
-        alert("⚠ Check low stock and expiry medicines!");
-
-    }, 1500);
-
-</script>
 
 </body>
 </html>

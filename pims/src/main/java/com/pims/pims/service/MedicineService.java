@@ -1,10 +1,11 @@
 package com.pims.pims.service;
 
-import com.pims.pims.model.Medicine;
-import com.pims.pims.repository.MedicineRepository;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.pims.pims.model.Medicine;
+import com.pims.pims.repository.MedicineRepository;
 
 @Service
 public class MedicineService {
@@ -29,5 +30,9 @@ public class MedicineService {
 
     public List<Medicine> search(String name) {
         return repo.findByNameContainingIgnoreCase(name);
+        
     }
+    public Medicine getById(Long id) {
+    return repo.findById(id).orElse(null);
+}
 }
