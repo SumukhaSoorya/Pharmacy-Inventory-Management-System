@@ -7,8 +7,123 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
           rel="stylesheet">
+          <!-- ALERTS MODAL -->
+<div class="modal fade" id="alertsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">🔔 Stock Alerts</h5>
+                <button type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <h6 class="text-danger">Expired Medicines</h6>
+
+                <table class="table table-sm table-bordered">
+                    <thead class="table-danger">
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Batch</th>
+                        <th>Qty</th>
+                        <th>Expiry</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(expiredStock)}">
+                        <td colspan="4" class="text-center text-muted">
+                            No expired medicines.
+                        </td>
+                    </tr>
+
+                    <tr th:each="s : ${expiredStock}">
+                        <td th:text="${s.medicine != null ? s.medicine.name : 'No Medicine'}"></td>
+                        <td th:text="${s.batchNo}"></td>
+                        <td th:text="${s.quantity}"></td>
+                        <td th:text="${s.expiryDate}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <h6 class="text-warning mt-4">Expiring Soon</h6>
+
+                <table class="table table-sm table-bordered">
+                    <thead class="table-warning">
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Batch</th>
+                        <th>Qty</th>
+                        <th>Expiry</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(expiringSoonStock)}">
+                        <td colspan="4" class="text-center text-muted">
+                            No medicines expiring soon.
+                        </td>
+                    </tr>
+
+                    <tr th:each="s : ${expiringSoonStock}">
+                        <td th:text="${s.medicine != null ? s.medicine.name : 'No Medicine'}"></td>
+                        <td th:text="${s.batchNo}"></td>
+                        <td th:text="${s.quantity}"></td>
+                        <td th:text="${s.expiryDate}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <h6 class="text-secondary mt-4">Low Stock</h6>
+
+                <table class="table table-sm table-bordered">
+                    <thead class="table-secondary">
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Batch</th>
+                        <th>Qty</th>
+                        <th>Reorder Level</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(lowStockList)}">
+                        <td colspan="4" class="text-center text-muted">
+                            No low stock items.
+                        </td>
+                    </tr>
+
+                    <tr th:each="s : ${lowStockList}">
+                        <td th:text="${s.medicine != null ? s.medicine.name : 'No Medicine'}"></td>
+                        <td th:text="${s.batchNo}"></td>
+                        <td th:text="${s.quantity}"></td>
+                        <td th:text="${s.reorderLevel}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <div class="modal-footer">
+                <a href="/stock" class="btn btn-dark">
+                    Go to Stock
+                </a>
+
+                <a href="/purchase-orders" class="btn btn-success">
+                    Go to Purchase Orders
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <style>
         body {
@@ -152,13 +267,16 @@
         <div class="d-flex align-items-center gap-3">
             <div class="badge bg-dark p-3" id="clock">--:--:--</div>
 
-            <button class="btn btn-danger position-relative">
-                🔔 Alerts
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark"
-                      th:text="${expiringSoonCount}">
-                    0
-                </span>
-            </button>
+           <button class="btn btn-danger position-relative"
+        data-bs-toggle="modal"
+        data-bs-target="#alertsModal">
+    🔔 Alerts
+
+    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark"
+          th:text="${totalAlerts}">
+        0
+    </span>
+</button>
 
             <div class="dropdown">
                 <button class="btn btn-primary dropdown-toggle"
@@ -212,33 +330,72 @@
 
     </div>
 
+    <div class="card panel shadow p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="mb-1">🤖 Smart Reorder Assistant</h5>
+            <p class="text-muted mb-0">
+                Automatically creates pending purchase orders for low stock medicines.
+            </p>
+        </div>
+
+        <form action="/purchase-orders/auto-reorder" method="post">
+            <button class="btn btn-success">
+                Generate Reorder Drafts
+            </button>
+        </form>
+    </div>
+</div>
+
     <!-- ANALYTICS -->
     <div class="row g-4">
 
-        <div class="col-md-8">
-            <div class="card panel shadow p-4">
-                <h5>📈 Sales Analytics</h5>
-                <p class="text-muted">Based on total sales and total bill count</p>
+    <div class="col-md-8">
+        <div class="card panel shadow p-4">
+            <h5>📈 Business Report Summary</h5>
+            <p class="text-muted">Live values from billing and stock records</p>
 
-                <div class="chart-box">
-                    <canvas id="salesChart"></canvas>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-4">
+                        <small class="text-muted">Total Bills</small>
+                        <h3 th:text="${totalBills}">0</h3>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-4">
+                        <small class="text-muted">Total GST</small>
+                        <h3>₹<span th:text="${totalGST}">0</span></h3>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="p-3 bg-light rounded-4">
+                        <small class="text-muted">Medicines</small>
+                        <h3 th:text="${medicineCount}">0</h3>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-md-4">
-            <div class="card panel shadow p-4">
-                <h5>📊 Inventory Status</h5>
-                <p class="text-muted">Stock health summary</p>
-
-                <div class="payment-box">
-                    <canvas id="stockChart"></canvas>
-                </div>
+            <div style="height:300px;">
+                <canvas id="businessChart"></canvas>
             </div>
         </div>
-
     </div>
 
+    <div class="col-md-4">
+        <div class="card panel shadow p-4">
+            <h5>📊 Inventory Risk</h5>
+            <p class="text-muted">Expiry and reorder status</p>
+
+            <div style="height:280px;">
+                <canvas id="stockChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
     <!-- EXPIRY TABLE -->
     <div class="card panel shadow mt-4 p-4">
         <h5>⚠ Stock Expiry and Low Stock Overview</h5>
@@ -303,18 +460,19 @@
 <script th:inline="javascript">
     const totalSales = /*[[${totalSales != null ? totalSales : 0}]]*/ 0;
     const totalBills = /*[[${totalBills != null ? totalBills : 0}]]*/ 0;
+    const totalGST = /*[[${totalGST != null ? totalGST : 0}]]*/ 0;
     const availableStock = /*[[${availableStock != null ? availableStock : 0}]]*/ 0;
     const expiredCount = /*[[${expiredCount != null ? expiredCount : 0}]]*/ 0;
     const expiringSoonCount = /*[[${expiringSoonCount != null ? expiringSoonCount : 0}]]*/ 0;
     const lowStockCount = /*[[${lowStockCount != null ? lowStockCount : 0}]]*/ 0;
 
-    new Chart(document.getElementById("salesChart"), {
+    new Chart(document.getElementById("businessChart"), {
         type: "bar",
         data: {
-            labels: ["Total Bills", "Total Sales"],
+            labels: ["Sales", "GST", "Bills", "Available Stock"],
             datasets: [{
-                label: "Billing Summary",
-                data: [totalBills, totalSales],
+                label: "Business Metrics",
+                data: [totalSales, totalGST, totalBills, availableStock],
                 borderWidth: 2
             }]
         },
@@ -352,37 +510,7 @@
         const now = new Date();
         document.getElementById("clock").innerText = now.toLocaleTimeString();
     }, 1000);
-
-    if (expiringSoonCount > 0) {
-        setTimeout(() => {
-            const toast = document.createElement("div");
-
-            toast.innerHTML = `
-                <div style="
-                    position:fixed;
-                    top:20px;
-                    right:20px;
-                    background:#dc2626;
-                    color:white;
-                    padding:15px 25px;
-                    border-radius:12px;
-                    z-index:9999;
-                    box-shadow:0 5px 15px rgba(0,0,0,0.3);
-                ">
-                    ⚠ ${expiringSoonCount} medicines are expiring soon!
-                </div>
-            `;
-
-            document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.remove();
-            }, 4000);
-
-        }, 1200);
-    }
 </script>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

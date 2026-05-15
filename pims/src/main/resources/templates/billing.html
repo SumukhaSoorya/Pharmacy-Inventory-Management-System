@@ -20,6 +20,7 @@
             border-radius: 16px;
             border: 1px solid #e5e7eb;
             transition: 0.2s;
+            background: white;
         }
 
         .medicine-card:hover {
@@ -31,6 +32,13 @@
             background: #f8fafc;
             border-radius: 18px;
             padding: 18px;
+        }
+
+        .print-bill {
+            border: 1px dashed #94a3b8;
+            border-radius: 16px;
+            padding: 18px;
+            background: #ffffff;
         }
     </style>
 </head>
@@ -66,9 +74,9 @@
                     <div class="col-md-3">
                         <label class="form-label">Payment Mode</label>
                         <select id="paymentMode" class="form-control">
-                            <option>Cash</option>
-                            <option>Card</option>
-                            <option>UPI</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Card">Card</option>
+                            <option value="UPI">UPI</option>
                         </select>
                     </div>
 
@@ -91,12 +99,12 @@
 
             <div class="row" id="medicineList">
 
-                <div class="col-md-4 mb-3"
+                <div class="col-md-4 mb-3 medicine-wrapper"
                      th:each="m : ${medicines}">
 
                     <div class="card medicine-card p-3 h-100">
 
-                        <h6 th:text="${m.name}">Medicine</h6>
+                        <h6 class="medicine-name" th:text="${m.name}">Medicine</h6>
 
                         <p class="text-muted mb-2"
                            th:text="${m.category != null ? m.category : 'General'}">
@@ -129,7 +137,7 @@
                     <thead class="table-dark">
                     <tr>
                         <th>Medicine</th>
-                        <th>Qty</th>
+                        <th style="width:90px;">Qty</th>
                         <th>Price</th>
                         <th>Total</th>
                         <th></th>
@@ -174,16 +182,20 @@
     let cart = [];
 
     function addToCart(name, price) {
+        if (!name || name.trim() === "") {
+            alert("Invalid medicine name");
+            return;
+        }
 
         let existing = cart.find(item => item.medicineName === name);
 
         if (existing) {
-            existing.quantity += 1;
+            existing.quantity = existing.quantity + 1;
         } else {
             cart.push({
                 medicineName: name,
                 quantity: 1,
-                unitPrice: price
+                unitPrice: Number(price)
             });
         }
 
@@ -198,7 +210,7 @@
     function changeQty(index, value) {
         let qty = Number(value);
 
-        if (qty <= 0) {
+        if (qty < 1 || isNaN(qty)) {
             qty = 1;
         }
 
@@ -207,7 +219,6 @@
     }
 
     function renderCart() {
-
         const body = document.getElementById("cartBody");
 
         if (cart.length === 0) {
@@ -225,9 +236,8 @@
 
         body.innerHTML = "";
 
-        cart.forEach((item, index) => {
-
-            let total = item.quantity * item.unitPrice;
+        cart.forEach(function(item, index) {
+            let rowTotal = item.quantity * item.unitPrice;
 
             body.innerHTML += `
                 <tr>
@@ -243,10 +253,11 @@
 
                     <td>₹${item.unitPrice.toFixed(2)}</td>
 
-                    <td>₹${total.toFixed(2)}</td>
+                    <td>₹${rowTotal.toFixed(2)}</td>
 
                     <td>
-                        <button class="btn btn-danger btn-sm"
+                        <button type="button"
+                                class="btn btn-danger btn-sm"
                                 onclick="removeItem(${index})">
                             X
                         </button>
@@ -259,14 +270,19 @@
     }
 
     function updateTotals() {
+        let subtotal = 0;
 
-        let subtotal = cart.reduce((sum, item) => {
-            return sum + (item.quantity * item.unitPrice);
-        }, 0);
+        cart.forEach(function(item) {
+            subtotal = subtotal + (item.quantity * item.unitPrice);
+        });
 
         let gst = subtotal * 0.12;
 
         let discount = Number(document.getElementById("discount").value || 0);
+
+        if (isNaN(discount) || discount < 0) {
+            discount = 0;
+        }
 
         let grandTotal = subtotal + gst - discount;
 
@@ -283,18 +299,27 @@
     document.getElementById("discount").addEventListener("input", updateTotals);
 
     function generateBill() {
-
         if (cart.length === 0) {
             alert("Please add medicines to cart");
             return;
         }
 
+        let cleanItems = cart.map(function(item) {
+            return {
+                medicineName: item.medicineName,
+                quantity: Number(item.quantity),
+                unitPrice: Number(item.unitPrice)
+            };
+        });
+
         const request = {
             customerName: document.getElementById("customerName").value || "Walk-in Customer",
             paymentMode: document.getElementById("paymentMode").value,
             discount: Number(document.getElementById("discount").value || 0),
-            items: cart
+            items: cleanItems
         };
+
+        console.log("Sending bill request:", request);
 
         fetch("/billing/save", {
             method: "POST",
@@ -303,7 +328,7 @@
             },
             body: JSON.stringify(request)
         })
-        .then(async response => {
+        .then(async function(response) {
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(errorText);
@@ -311,20 +336,22 @@
 
             return response.json();
         })
-        .then(bill => {
-
+        .then(function(bill) {
             const result = document.getElementById("billResult");
 
             result.classList.remove("d-none");
 
             result.innerHTML = `
-                <h5>Bill Generated Successfully</h5>
-                <p><b>Bill ID:</b> ${bill.id}</p>
-                <p><b>Customer:</b> ${bill.customerName}</p>
-                <p><b>Payment:</b> ${bill.paymentMode}</p>
-                <p><b>GST:</b> ₹${Number(bill.gstAmount).toFixed(2)}</p>
-                <p><b>Discount:</b> ₹${Number(bill.discount).toFixed(2)}</p>
-                <h4><b>Total Payable:</b> ₹${Number(bill.totalAmount).toFixed(2)}</h4>
+                <div class="print-bill">
+                    <h5>Bill Generated Successfully</h5>
+                    <hr>
+                    <p><b>Bill ID:</b> ${bill.id}</p>
+                    <p><b>Customer:</b> ${bill.customerName}</p>
+                    <p><b>Payment:</b> ${bill.paymentMode}</p>
+                    <p><b>GST:</b> ₹${Number(bill.gstAmount).toFixed(2)}</p>
+                    <p><b>Discount:</b> ₹${Number(bill.discount).toFixed(2)}</p>
+                    <h4><b>Total Payable:</b> ₹${Number(bill.totalAmount).toFixed(2)}</h4>
+                </div>
             `;
 
             cart = [];
@@ -332,22 +359,25 @@
 
             document.getElementById("customerName").value = "";
             document.getElementById("discount").value = 0;
+            updateTotals();
         })
-        .catch(error => {
+        .catch(function(error) {
             console.error(error);
             alert("Error generating bill: " + error.message);
         });
     }
 
     document.getElementById("search").addEventListener("input", function () {
-
         let value = this.value.toLowerCase();
 
-        document.querySelectorAll(".medicine-card").forEach(card => {
+        document.querySelectorAll(".medicine-wrapper").forEach(function(wrapper) {
+            let text = wrapper.innerText.toLowerCase();
 
-            let text = card.innerText.toLowerCase();
-
-            card.parentElement.style.display = text.includes(value) ? "block" : "none";
+            if (text.includes(value)) {
+                wrapper.style.display = "block";
+            } else {
+                wrapper.style.display = "none";
+            }
         });
     });
 </script>

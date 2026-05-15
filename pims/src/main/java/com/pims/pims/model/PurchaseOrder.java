@@ -1,7 +1,15 @@
 package com.pims.pims.model;
 
-import jakarta.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "purchase_order")
@@ -11,42 +19,33 @@ public class PurchaseOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Supplier connected to this order
-    @ManyToOne
-    @JoinColumn(name = "supplier_id")
-    private Supplier supplier;
-
-    private LocalDate orderDate = LocalDate.now();
-
     private String medicineName;
 
     private int quantity;
 
     private double totalAmount;
 
-    // Pending, Accepted, Rejected, Dispatched, Received
-    private String status = "Pending";
+    private String status;
 
     private String factoryRemark;
 
+    private LocalDateTime orderDate;
+
+    @ManyToOne
+    @JoinColumn(name = "supplier_id")
+    private Supplier supplier;
+
+    @PrePersist
+    public void onCreate() {
+        orderDate = LocalDateTime.now();
+
+        if (status == null) {
+            status = "Pending";
+        }
+    }
+
     public Long getId() {
         return id;
-    }
-
-    public Supplier getSupplier() {
-        return supplier;
-    }
-
-    public void setSupplier(Supplier supplier) {
-        this.supplier = supplier;
-    }
-
-    public LocalDate getOrderDate() {
-        return orderDate;
-    }
-
-    public void setOrderDate(LocalDate orderDate) {
-        this.orderDate = orderDate;
     }
 
     public String getMedicineName() {
@@ -64,6 +63,7 @@ public class PurchaseOrder {
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
+
 
     public double getTotalAmount() {
         return totalAmount;
@@ -87,5 +87,17 @@ public class PurchaseOrder {
 
     public void setFactoryRemark(String factoryRemark) {
         this.factoryRemark = factoryRemark;
+    }
+
+    public LocalDateTime getOrderDate() {
+        return orderDate;
+    }
+
+    public Supplier getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(Supplier supplier) {
+        this.supplier = supplier;
     }
 }

@@ -39,6 +39,11 @@
     <div th:if="${success != null}" class="alert alert-success">
         Purchase order placed successfully.
     </div>
+    <div th:if="${autoCreated != null}" class="alert alert-info">
+    Auto reorder completed.
+    Draft purchase orders created:
+    <b th:text="${autoCreated}">0</b>
+</div>
 
     <div th:if="${error != null}" class="alert alert-danger">
         Could not place purchase order. Please select supplier and try again.

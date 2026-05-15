@@ -31,23 +31,31 @@ public class DashboardController {
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
 
-        model.addAttribute("medicineCount", medicineService.getAll().size());
+        Long lowStockCount = stockService.getLowStockCount();
+        Long expiredCount = stockService.getExpiredCount();
+        Long expiringSoonCount = stockService.getExpiringSoonCount();
 
+        long totalAlerts =
+                lowStockCount + expiredCount + expiringSoonCount;
+
+        model.addAttribute("medicineCount", medicineService.getAll().size());
         model.addAttribute("availableStock", stockService.getAvailableStock());
 
-        model.addAttribute("lowStockCount", stockService.getLowStockCount());
-
-        model.addAttribute("expiredCount", stockService.getExpiredCount());
-
-        model.addAttribute("expiringSoonCount", stockService.getExpiringSoonCount());
+        model.addAttribute("lowStockCount", lowStockCount);
+        model.addAttribute("expiredCount", expiredCount);
+        model.addAttribute("expiringSoonCount", expiringSoonCount);
+        model.addAttribute("totalAlerts", totalAlerts);
 
         model.addAttribute("pendingOrders", purchaseOrderService.countByStatus("Pending"));
 
         model.addAttribute("totalSales", billService.getTotalSales());
-
         model.addAttribute("totalBills", billService.getTotalBills());
+        model.addAttribute("totalGST", billService.getTotalGST());
 
         model.addAttribute("stockList", stockService.getAll());
+        model.addAttribute("expiredStock", stockService.getExpiredStock());
+        model.addAttribute("expiringSoonStock", stockService.getExpiringSoon());
+        model.addAttribute("lowStockList", stockService.getLowStock());
 
         return "dashboard";
     }

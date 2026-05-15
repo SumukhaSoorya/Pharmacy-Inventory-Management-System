@@ -1,12 +1,12 @@
 package com.pims.pims.service;
 
+import org.springframework.stereotype.Service;
+
 import com.pims.pims.dto.BillItemRequest;
 import com.pims.pims.dto.BillRequest;
 import com.pims.pims.model.Bill;
 import com.pims.pims.model.BillItem;
 import com.pims.pims.repository.BillRepository;
-
-import org.springframework.stereotype.Service;
 
 @Service
 public class BillService {
@@ -78,4 +78,8 @@ public class BillService {
         Long count = billRepository.getTotalBills();
         return count == null ? 0 : count;
     }
+    public Double getTotalGST() {
+    Double gst = billRepository.getTotalGST();
+    return gst == null ? 0.0 : gst;
+}
 }
