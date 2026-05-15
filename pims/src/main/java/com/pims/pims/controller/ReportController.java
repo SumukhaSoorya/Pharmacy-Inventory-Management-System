@@ -18,29 +18,17 @@ public class ReportController {
     @GetMapping("/reports")
     public String reports(Model model) {
 
-        Double sales =
-                billRepository.getTotalSales();
+        Double sales = billRepository.getTotalSales();
 
-        Double gst =
-                billRepository.getTotalGST();
+        Double gst = billRepository.getTotalGST();
 
-        Long bills =
-                billRepository.getTotalBills();
+        Long bills = billRepository.getTotalBills();
 
-        model.addAttribute(
-                "sales",
-                sales != null ? sales : 0
-        );
+        model.addAttribute("sales", sales != null ? sales : 0);
 
-        model.addAttribute(
-                "gst",
-                gst != null ? gst : 0
-        );
+        model.addAttribute("gst", gst != null ? gst : 0);
 
-        model.addAttribute(
-                "bills",
-                bills
-        );
+        model.addAttribute("bills", bills != null ? bills : 0);
 
         return "reports";
     }

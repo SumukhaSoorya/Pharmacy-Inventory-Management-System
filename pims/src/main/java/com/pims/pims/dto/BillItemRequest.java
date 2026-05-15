@@ -2,18 +2,9 @@ package com.pims.pims.dto;
 
 public class BillItemRequest {
 
-    private Long medicineId;
     private String medicineName;
     private int quantity;
     private double unitPrice;
-
-    public Long getMedicineId() {
-        return medicineId;
-    }
-
-    public void setMedicineId(Long medicineId) {
-        this.medicineId = medicineId;
-    }
 
     public String getMedicineName() {
         return medicineName;

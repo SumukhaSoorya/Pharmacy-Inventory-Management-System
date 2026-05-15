@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-
     <title>PIMS Dashboard</title>
 
     <link rel="stylesheet" href="/css/style.css">
@@ -11,355 +10,380 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <style>
+        body {
+            background: #eef2f7;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: linear-gradient(180deg, #102a43, #243b53);
+            color: white;
+            padding: 25px 18px;
+        }
+
+        .sidebar h3 {
+            font-weight: 800;
+            margin-bottom: 25px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #e2e8f0;
+            text-decoration: none;
+            padding: 12px 14px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 28px;
+        }
+
+        .top-card {
+            border: none;
+            border-radius: 22px;
+            padding: 22px;
+            color: white;
+            min-height: 135px;
+        }
+
+        .card-blue {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+
+        .card-green {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+        }
+
+        .card-red {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+        }
+
+        .card-yellow {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #111827;
+        }
+
+        .panel {
+            border: none;
+            border-radius: 22px;
+            background: white;
+        }
+
+        .chart-box {
+            height: 300px;
+        }
+
+        .payment-box {
+            width: 280px;
+            height: 280px;
+            margin: auto;
+        }
+
+        .dark-mode {
+            background: #111827;
+            color: white;
+        }
+
+        .dark-mode .panel {
+            background: #1f2937;
+            color: white;
+        }
+
+        .dark-mode .table {
+            color: white;
+        }
+
+        .expired-row {
+            background-color: #fee2e2 !important;
+        }
+
+        .soon-row {
+            background-color: #fef3c7 !important;
+        }
+    </style>
 </head>
 
-<body id="body">
+<body>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-
     <h3>💊 PIMS</h3>
 
     <a href="/dashboard">🏠 Dashboard</a>
-
     <a href="/medicines">💊 Medicines</a>
-
     <a href="/stock">📦 Stock</a>
-
     <a href="/billing">🧾 Billing</a>
-
-    <a href="/reports">
-
-    📊 Reports
-
-    </a>
-    <a href="/purchase-orders">
-
-    📦 Purchase Orders
-
-</a>
-
-    <a href="#">🏭 Factory Portal</a>
-    <a href="/suppliers">
-
-    🏭 Suppliers
-
-</a>   
-
+    <a href="/reports">📊 Reports</a>
+    <a href="/purchase-orders">📦 Purchase Orders</a>
+    <a href="/suppliers">🏭 Suppliers</a>
+    <a href="/about">ℹ️ About Us</a>
     <a href="/logout">🚪 Logout</a>
 
     <hr>
 
-    <!-- DARK MODE -->
-    <button onclick="toggleDarkMode()"
-            class="btn btn-light w-100">
-
+    <button onclick="toggleDarkMode()" class="btn btn-light w-100">
         🌙 Dark Mode
-
     </button>
-
 </div>
 
 <!-- MAIN -->
 <div class="main-content">
 
+    <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-
-    <!-- LEFT -->
-    <div>
-
-        <h2 class="fw-bold">
-
-            Pharmacy Inventory Dashboard
-
-        </h2>
-
-        <p class="text-muted">
-
-            Welcome back, Admin 👋
-
-        </p>
-
-    </div>
-
-    <!-- RIGHT -->
-    <div class="d-flex align-items-center gap-3">
-
-        <!-- CLOCK -->
-        <div class="badge bg-dark p-3"
-             id="clock">
-
+        <div>
+            <h2 class="fw-bold mb-1">Pharmacy Inventory Dashboard</h2>
+            <p class="text-muted mb-0">Live overview of sales, stock, expiry alerts and purchase orders</p>
         </div>
 
-        <!-- ALERT -->
-        <button class="btn btn-danger position-relative">
+        <div class="d-flex align-items-center gap-3">
+            <div class="badge bg-dark p-3" id="clock">--:--:--</div>
 
-            🔔 Alerts
-
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning">
-
-                3
-
-            </span>
-
-        </button>
-
-        <!-- PROFILE -->
-        <div class="dropdown">
-
-            <button class="btn btn-primary dropdown-toggle"
-                    data-bs-toggle="dropdown">
-
-                👤 Admin
-
+            <button class="btn btn-danger position-relative">
+                🔔 Alerts
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark"
+                      th:text="${expiringSoonCount}">
+                    0
+                </span>
             </button>
 
-            <ul class="dropdown-menu">
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle"
+                        data-bs-toggle="dropdown">
+                    👤 Admin
+                </button>
 
-                <li>
-                    <a class="dropdown-item"
-                       href="#">
-
-                        Profile
-
-                    </a>
-                </li>
-
-                <li>
-                    <a class="dropdown-item"
-                       href="/logout">
-
-                        Logout
-
-                    </a>
-                </li>
-
-            </ul>
-
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" href="/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
         </div>
-
     </div>
 
-</div>
     <!-- KPI CARDS -->
-    <div class="row mt-4">
+    <div class="row g-4 mb-4">
 
-        <div class="col-md-4">
-
-            <div class="dashboard-card sales-card shadow">
-
-                <h5>Today's Sales</h5>
-
-                <h2>₹25,430</h2>
-
+        <div class="col-md-3">
+            <div class="top-card card-blue shadow">
+                <h6>Total Sales</h6>
+                <h2>₹<span th:text="${totalSales != null ? totalSales : 0}">0</span></h2>
+                <small>Generated from billing records</small>
             </div>
-
         </div>
 
-        <div class="col-md-4">
-
-            <div class="dashboard-card stock-card shadow">
-
-                <h5>Available Stock</h5>
-
-                <h2>1250</h2>
-
+        <div class="col-md-3">
+            <div class="top-card card-green shadow">
+                <h6>Available Stock</h6>
+                <h2 th:text="${availableStock != null ? availableStock : 0}">0</h2>
+                <small>Total quantity available</small>
             </div>
-
         </div>
 
-        <div class="col-md-4">
-
-            <div class="dashboard-card expiry-card shadow">
-
-                <h5>Expiry Medicines</h5>
-
-                <h2>18</h2>
-
+        <div class="col-md-3">
+            <div class="top-card card-red shadow">
+                <h6>Expired Medicines</h6>
+                <h2 th:text="${expiredCount != null ? expiredCount : 0}">0</h2>
+                <small>Expired stock count</small>
             </div>
+        </div>
 
+        <div class="col-md-3">
+            <div class="top-card card-yellow shadow">
+                <h6>Pending Orders</h6>
+                <h2 th:text="${pendingOrders != null ? pendingOrders : 0}">0</h2>
+                <small>Waiting for factory action</small>
+            </div>
         </div>
 
     </div>
 
-    <!-- CHART -->
-    <div class="card shadow mt-4 p-4">
+    <!-- ANALYTICS -->
+    <div class="row g-4">
 
-        <h5>📈 Weekly Sales Analytics</h5>
+        <div class="col-md-8">
+            <div class="card panel shadow p-4">
+                <h5>📈 Sales Analytics</h5>
+                <p class="text-muted">Based on total sales and total bill count</p>
 
-        <canvas id="salesChart"></canvas>
-        <hr>
+                <div class="chart-box">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+        </div>
 
-<h5 class="mt-4">
+        <div class="col-md-4">
+            <div class="card panel shadow p-4">
+                <h5>📊 Inventory Status</h5>
+                <p class="text-muted">Stock health summary</p>
 
-    💰 Payment Analytics
-
-</h5>
-
-<div class="d-flex justify-content-center">
-
-    <div style="width:350px;height:350px;">
-
-        <canvas id="paymentChart"></canvas>
+                <div class="payment-box">
+                    <canvas id="stockChart"></canvas>
+                </div>
+            </div>
+        </div>
 
     </div>
 
-</div>
+    <!-- EXPIRY TABLE -->
+    <div class="card panel shadow mt-4 p-4">
+        <h5>⚠ Stock Expiry and Low Stock Overview</h5>
 
-    </div>
-
-    <!-- ALERT TABLE -->
-    <div class="card shadow mt-4 p-4">
-
-        <h5>⚠ Expiry Alerts</h5>
-
-        <table class="table">
-
-            <thead>
+        <table class="table table-hover align-middle mt-3">
+            <thead class="table-dark">
             <tr>
                 <th>Medicine</th>
                 <th>Batch</th>
-                <th>Expiry</th>
+                <th>Quantity</th>
+                <th>Reorder Level</th>
+                <th>Expiry Date</th>
                 <th>Status</th>
             </tr>
             </thead>
 
             <tbody>
-
-            <tr>
-                <td>Paracetamol</td>
-                <td>B102</td>
-                <td>2026-02-01</td>
-                <td>
-                    <span class="badge bg-danger">
-                        Expiring Soon
-                    </span>
+            <tr th:if="${#lists.isEmpty(stockList)}">
+                <td colspan="6" class="text-center text-muted">
+                    No stock added yet.
                 </td>
             </tr>
 
+            <tr th:each="s : ${stockList}"
+                th:classappend="${s.expiryDate != null and s.expiryDate.isBefore(T(java.time.LocalDate).now())} ? 'expired-row' :
+                                (${s.expiryDate != null and s.expiryDate.isBefore(T(java.time.LocalDate).now().plusDays(30))} ? 'soon-row' : '')">
+
+                <td th:text="${s.medicine != null ? s.medicine.name : 'No Medicine'}"></td>
+                <td th:text="${s.batchNo != null ? s.batchNo : '-'}"></td>
+                <td th:text="${s.quantity}"></td>
+                <td th:text="${s.reorderLevel}"></td>
+                <td th:text="${s.expiryDate != null ? s.expiryDate : '-'}"></td>
+
+                <td>
+                    <span th:if="${s.expiryDate != null and s.expiryDate.isBefore(T(java.time.LocalDate).now())}"
+                          class="badge bg-danger">
+                        Expired
+                    </span>
+
+                    <span th:if="${s.expiryDate != null and !s.expiryDate.isBefore(T(java.time.LocalDate).now()) and s.expiryDate.isBefore(T(java.time.LocalDate).now().plusDays(30))}"
+                          class="badge bg-warning text-dark">
+                        Expiring Soon
+                    </span>
+
+                    <span th:if="${s.expiryDate != null and !s.expiryDate.isBefore(T(java.time.LocalDate).now().plusDays(30))}"
+                          class="badge bg-success">
+                        Safe
+                    </span>
+
+                    <span th:if="${s.quantity <= s.reorderLevel}"
+                          class="badge bg-secondary ms-1">
+                        Low Stock
+                    </span>
+                </td>
+            </tr>
             </tbody>
-
         </table>
-
     </div>
 
 </div>
 
-<script>
+<script th:inline="javascript">
+    const totalSales = /*[[${totalSales != null ? totalSales : 0}]]*/ 0;
+    const totalBills = /*[[${totalBills != null ? totalBills : 0}]]*/ 0;
+    const availableStock = /*[[${availableStock != null ? availableStock : 0}]]*/ 0;
+    const expiredCount = /*[[${expiredCount != null ? expiredCount : 0}]]*/ 0;
+    const expiringSoonCount = /*[[${expiringSoonCount != null ? expiringSoonCount : 0}]]*/ 0;
+    const lowStockCount = /*[[${lowStockCount != null ? lowStockCount : 0}]]*/ 0;
 
-    // CHART
     new Chart(document.getElementById("salesChart"), {
-
-        type: 'line',
-
+        type: "bar",
         data: {
-
-            labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-
+            labels: ["Total Bills", "Total Sales"],
             datasets: [{
-
-                label: 'Sales',
-
-                data: [12000,19000,15000,25000,22000,30000,28000],
-
-                borderWidth: 3
-
+                label: "Billing Summary",
+                data: [totalBills, totalSales],
+                borderWidth: 2
             }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
         }
     });
-   new Chart(document.getElementById("paymentChart"), {
 
-    type:'doughnut',
-
-    data:{
-
-        labels:[
-            'Cash',
-            'Card',
-            'UPI'
-        ],
-
-        datasets:[{
-
-            data:[
-                45,
-                25,
-                30
-            ],
-
-            borderWidth:2
-
-        }]
-    },
-
-    options:{
-
-        responsive:true,
-
-        maintainAspectRatio:false,
-
-        plugins:{
-
-            legend:{
-
-                position:'bottom'
+    new Chart(document.getElementById("stockChart"), {
+        type: "doughnut",
+        data: {
+            labels: ["Available", "Expired", "Expiring Soon", "Low Stock"],
+            datasets: [{
+                data: [availableStock, expiredCount, expiringSoonCount, lowStockCount],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: "bottom"
+                }
             }
         }
-    }
-});
+    });
 
-    // DARK MODE
-    function toggleDarkMode(){
-
+    function toggleDarkMode() {
         document.body.classList.toggle("dark-mode");
     }
 
-    // POPUP ALERT
-    setTimeout(() => {
+    setInterval(() => {
+        const now = new Date();
+        document.getElementById("clock").innerText = now.toLocaleTimeString();
+    }, 1000);
 
-        alert("⚠ 3 medicines are expiring within 30 days!");
+    if (expiringSoonCount > 0) {
+        setTimeout(() => {
+            const toast = document.createElement("div");
 
-    }, 1500);
-    // LIVE CLOCK
+            toast.innerHTML = `
+                <div style="
+                    position:fixed;
+                    top:20px;
+                    right:20px;
+                    background:#dc2626;
+                    color:white;
+                    padding:15px 25px;
+                    border-radius:12px;
+                    z-index:9999;
+                    box-shadow:0 5px 15px rgba(0,0,0,0.3);
+                ">
+                    ⚠ ${expiringSoonCount} medicines are expiring soon!
+                </div>
+            `;
 
-setInterval(() => {
+            document.body.appendChild(toast);
 
-    const now = new Date();
+            setTimeout(() => {
+                toast.remove();
+            }, 4000);
 
-    document.getElementById("clock")
-        .innerText = now.toLocaleTimeString();
-
-}, 1000);
-// SMART ALERTS
-
-setTimeout(() => {
-
-    const toast = document.createElement("div");
-
-    toast.innerHTML = `
-
-        <div style="
-            position:fixed;
-            top:20px;
-            right:20px;
-            background:#dc2626;
-            color:white;
-            padding:15px 25px;
-            border-radius:12px;
-            z-index:9999;
-            box-shadow:0 5px 15px rgba(0,0,0,0.3);
-        ">
-
-            ⚠ 2 Medicines Expiring Soon!
-
-        </div>
-
-    `;
-
-    document.body.appendChild(toast);
-
-}, 2000);
+        }, 1200);
+    }
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

@@ -1,11 +1,11 @@
 package com.pims.pims.service;
 
-import java.util.List;
+import com.pims.pims.model.PurchaseOrder;
+import com.pims.pims.repository.PurchaseOrderRepository;
 
 import org.springframework.stereotype.Service;
 
-import com.pims.pims.model.PurchaseOrder;
-import com.pims.pims.repository.PurchaseOrderRepository;
+import java.util.List;
 
 @Service
 public class PurchaseOrderService {
@@ -18,7 +18,7 @@ public class PurchaseOrderService {
 
     public PurchaseOrder save(PurchaseOrder po) {
 
-        if (po.getStatus() == null || po.getStatus().isEmpty()) {
+        if (po.getStatus() == null || po.getStatus().isBlank()) {
             po.setStatus("Pending");
         }
 
@@ -52,5 +52,9 @@ public class PurchaseOrderService {
             order.setFactoryRemark(remark);
             repo.save(order);
         }
+    }
+
+    public Long countByStatus(String status) {
+        return repo.countByStatus(status);
     }
 }

@@ -3,6 +3,7 @@ package com.pims.pims.model;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "bill_item")
 public class BillItem {
 
     @Id
@@ -20,6 +21,7 @@ public class BillItem {
     private double totalPrice;
 
     @ManyToOne
+    @JoinColumn(name = "bill_id")
     private Bill bill;
 
     public Long getId() {

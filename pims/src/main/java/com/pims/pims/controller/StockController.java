@@ -40,8 +40,11 @@ public class StockController {
 
     @PostMapping("/save")
     public String saveStock(@RequestParam("medicineId") Long medicineId,
+                            @RequestParam("batchNo") String batchNo,
                             @RequestParam("quantity") int quantity,
                             @RequestParam("reorderLevel") int reorderLevel,
+                            @RequestParam("purchasePrice") double purchasePrice,
+                            @RequestParam("sellingPrice") double sellingPrice,
                             @RequestParam("expiryDate") String expiryDate) {
 
         Medicine medicine = medicineService.getById(medicineId);
@@ -52,8 +55,11 @@ public class StockController {
 
         Stock stock = new Stock();
         stock.setMedicine(medicine);
+        stock.setBatchNo(batchNo);
         stock.setQuantity(quantity);
         stock.setReorderLevel(reorderLevel);
+        stock.setPurchasePrice(purchasePrice);
+        stock.setSellingPrice(sellingPrice);
         stock.setExpiryDate(LocalDate.parse(expiryDate));
 
         stockService.save(stock);

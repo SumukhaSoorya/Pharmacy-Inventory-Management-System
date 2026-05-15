@@ -1,86 +1,97 @@
 package com.pims.pims.service;
 
-import java.time.LocalDate;
-import java.util.List;
+import com.pims.pims.model.Medicine;
+import com.pims.pims.model.Stock;
+import com.pims.pims.repository.MedicineRepository;
+import com.pims.pims.repository.StockRepository;
 
 import org.springframework.stereotype.Service;
 
-import com.pims.pims.model.Medicine;
-import com.pims.pims.model.Stock;
-import com.pims.pims.repository.StockRepository;
+import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class StockService {
 
-    private final StockRepository repo;
+    private final StockRepository stockRepository;
+    private final MedicineRepository medicineRepository;
 
-    // CONSTRUCTOR
-    public StockService(StockRepository repo) {
-        this.repo = repo;
+    public StockService(StockRepository stockRepository,
+                        MedicineRepository medicineRepository) {
+        this.stockRepository = stockRepository;
+        this.medicineRepository = medicineRepository;
     }
 
-    // GET ALL STOCK
     public List<Stock> getAll() {
-        return repo.findAll();
+        return stockRepository.findAll();
     }
 
-    // SAVE STOCK
-    public Stock save(Stock stock) {
-        return repo.save(stock);
-    }
+    public Stock saveStock(Long medicineId,
+                           String batchNo,
+                           int quantity,
+                           int reorderLevel,
+                           double purchasePrice,
+                           double sellingPrice,
+                           LocalDate expiryDate) {
 
-    // EXPIRING SOON
-    public List<Stock> getExpiringSoon() {
-        return repo.findByExpiryDateBefore(
-                LocalDate.now().plusDays(30)
-        );
-    }
+        Medicine medicine = medicineRepository.findById(medicineId).orElse(null);
 
-    // LOW STOCK
-    public List<Stock> getLowStock() {
-
-        return repo.findAll()
-                .stream()
-                .filter(s -> s.getQuantity() <= s.getReorderLevel())
-                .toList();
-    }
-    public boolean shouldReorder(Stock stock){
-
-    return stock.getQuantity()
-            <= stock.getReorderLevel();
-}
-public String generatePurchaseSuggestion(
-        Stock stock
-){
-
-    if(stock.getQuantity()
-            <= stock.getReorderLevel()){
-
-        return "Suggested PO: Reorder "
-                + stock.getMedicine().getName();
-    }
-
-    return "Stock OK";
-}
-
-    // REDUCE STOCK AFTER BILL
-    public void reduceStock(Medicine medicine, int qty) {
-
-        List<Stock> stocks = repo.findAll();
-
-        for (Stock s : stocks) {
-
-            if (s.getMedicine().getId()
-                    .equals(medicine.getId())) {
-
-                s.setQuantity(
-                        s.getQuantity() - qty
-                );
-
-                repo.save(s);
-
-                break;
-            }
+        if (medicine == null) {
+            throw new RuntimeException("Medicine not found with ID: " + medicineId);
         }
+
+        Stock stock = new Stock();
+
+        stock.setMedicine(medicine);
+        stock.setBatchNo(batchNo);
+        stock.setQuantity(quantity);
+        stock.setReorderLevel(reorderLevel);
+        stock.setPurchasePrice(purchasePrice);
+        stock.setSellingPrice(sellingPrice);
+        stock.setExpiryDate(expiryDate);
+
+        return stockRepository.save(stock);
+    }
+
+    public Stock save(Stock stock) {
+        return stockRepository.save(stock);
+    }
+
+    public Long getAvailableStock() {
+        Long value = stockRepository.getAvailableStock();
+        return value == null ? 0 : value;
+    }
+
+    public Long getExpiredCount() {
+        Long value = stockRepository.getExpiredCount(LocalDate.now());
+        return value == null ? 0 : value;
+    }
+
+    public Long getExpiringSoonCount() {
+        LocalDate today = LocalDate.now();
+        LocalDate endDate = today.plusDays(30);
+
+        Long value = stockRepository.getExpiringSoonCount(today, endDate);
+        return value == null ? 0 : value;
+    }
+
+    public List<Stock> getExpiredStock() {
+        return stockRepository.findExpiredStock(LocalDate.now());
+    }
+
+    public List<Stock> getExpiringSoon() {
+        LocalDate today = LocalDate.now();
+        LocalDate endDate = today.plusDays(30);
+
+        return stockRepository.findExpiringSoon(today, endDate);
+    }
+
+    public List<Stock> getLowStock() {
+        return stockRepository.findLowStock();
+    }
+
+    public Long getLowStockCount() {
+        Long value = stockRepository.getLowStockCount();
+        return value == null ? 0 : value;
     }
 }

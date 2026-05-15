@@ -29,7 +29,6 @@ public class PurchaseOrderController {
 
         model.addAttribute("orders", poService.getAll());
         model.addAttribute("suppliers", supplierService.getAll());
-        model.addAttribute("purchaseOrder", new PurchaseOrder());
 
         model.addAttribute("success", success);
         model.addAttribute("error", error);
@@ -49,14 +48,15 @@ public class PurchaseOrderController {
             return "redirect:/purchase-orders?error=supplier-not-found";
         }
 
-        PurchaseOrder po = new PurchaseOrder();
-        po.setSupplier(supplier);
-        po.setMedicineName(medicineName);
-        po.setQuantity(quantity);
-        po.setTotalAmount(totalAmount);
-        po.setStatus("Pending");
+        PurchaseOrder order = new PurchaseOrder();
 
-        poService.save(po);
+        order.setSupplier(supplier);
+        order.setMedicineName(medicineName);
+        order.setQuantity(quantity);
+        order.setTotalAmount(totalAmount);
+        order.setStatus("Pending");
+
+        poService.save(order);
 
         return "redirect:/purchase-orders?success=order-placed";
     }

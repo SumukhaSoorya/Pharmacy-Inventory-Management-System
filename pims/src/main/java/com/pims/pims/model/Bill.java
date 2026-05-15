@@ -1,17 +1,12 @@
 package com.pims.pims.model;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-
 @Entity
+@Table(name = "bill")
 public class Bill {
 
     @Id
@@ -20,19 +15,23 @@ public class Bill {
 
     private String customerName;
 
-    private LocalDateTime billDate = LocalDateTime.now();
+    private String paymentMode;
 
-    private double totalAmount;
+    private double discount;
 
     private double gstAmount;
 
-    private double discount;
-    private int loyaltyPointsEarned = 0;
+    private double totalAmount;
 
-    private String paymentMode;
+    private LocalDateTime billDate;
 
-    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "bill", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BillItem> items = new ArrayList<>();
+
+    @PrePersist
+    public void onCreate() {
+        billDate = LocalDateTime.now();
+    }
 
     public Long getId() {
         return id;
@@ -46,28 +45,12 @@ public class Bill {
         this.customerName = customerName;
     }
 
-    public LocalDateTime getBillDate() {
-        return billDate;
+    public String getPaymentMode() {
+        return paymentMode;
     }
 
-    public void setBillDate(LocalDateTime billDate) {
-        this.billDate = billDate;
-    }
-
-    public double getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(double totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
-    public double getGstAmount() {
-        return gstAmount;
-    }
-
-    public void setGstAmount(double gstAmount) {
-        this.gstAmount = gstAmount;
+    public void setPaymentMode(String paymentMode) {
+        this.paymentMode = paymentMode;
     }
 
     public double getDiscount() {
@@ -78,12 +61,28 @@ public class Bill {
         this.discount = discount;
     }
 
-    public String getPaymentMode() {
-        return paymentMode;
+    public double getGstAmount() {
+        return gstAmount;
     }
 
-    public void setPaymentMode(String paymentMode) {
-        this.paymentMode = paymentMode;
+    public void setGstAmount(double gstAmount) {
+        this.gstAmount = gstAmount;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public LocalDateTime getBillDate() {
+        return billDate;
+    }
+
+    public void setBillDate(LocalDateTime billDate) {
+        this.billDate = billDate;
     }
 
     public List<BillItem> getItems() {
@@ -93,11 +92,4 @@ public class Bill {
     public void setItems(List<BillItem> items) {
         this.items = items;
     }
-    public int getLoyaltyPointsEarned() {
-    return loyaltyPointsEarned;
-}
-
-public void setLoyaltyPointsEarned(int loyaltyPointsEarned) {
-    this.loyaltyPointsEarned = loyaltyPointsEarned;
-}
 }

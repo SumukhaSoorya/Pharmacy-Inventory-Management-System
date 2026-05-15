@@ -41,7 +41,7 @@
     </div>
 
     <div th:if="${error != null}" class="alert alert-danger">
-        Could not place purchase order. Please check supplier and try again.
+        Could not place purchase order. Please select supplier and try again.
     </div>
 
     <!-- CREATE ORDER -->
@@ -154,19 +154,29 @@
 
                 <td>
                     <span th:if="${o.status == 'Pending'}"
-                          class="badge bg-warning text-dark">Pending</span>
+                          class="badge bg-warning text-dark">
+                        Pending
+                    </span>
 
                     <span th:if="${o.status == 'Accepted'}"
-                          class="badge bg-primary">Accepted</span>
+                          class="badge bg-primary">
+                        Accepted
+                    </span>
 
                     <span th:if="${o.status == 'Rejected'}"
-                          class="badge bg-danger">Rejected</span>
+                          class="badge bg-danger">
+                        Rejected
+                    </span>
 
                     <span th:if="${o.status == 'Dispatched'}"
-                          class="badge bg-info text-dark">Dispatched</span>
+                          class="badge bg-info text-dark">
+                        Dispatched
+                    </span>
 
                     <span th:if="${o.status == 'Received'}"
-                          class="badge bg-success">Received</span>
+                          class="badge bg-success">
+                        Received
+                    </span>
                 </td>
 
                 <td th:text="${o.factoryRemark != null ? o.factoryRemark : '-'}"></td>

@@ -1,12 +1,12 @@
 package com.pims.pims.service;
 
-import org.springframework.stereotype.Service;
-
 import com.pims.pims.dto.BillItemRequest;
 import com.pims.pims.dto.BillRequest;
 import com.pims.pims.model.Bill;
 import com.pims.pims.model.BillItem;
 import com.pims.pims.repository.BillRepository;
+
+import org.springframework.stereotype.Service;
 
 @Service
 public class BillService {
@@ -19,68 +19,63 @@ public class BillService {
 
     public Bill createBill(BillRequest request) {
 
-    Bill bill = new Bill();
+        Bill bill = new Bill();
 
-    bill.setCustomerName(request.getCustomerName());
-    bill.setPaymentMode(request.getPaymentMode());
-    bill.setDiscount(request.getDiscount());
+        bill.setCustomerName(request.getCustomerName());
+        bill.setPaymentMode(request.getPaymentMode());
+        bill.setDiscount(request.getDiscount());
 
-    double total = 0;
-    double gstTotal = 0;
+        double total = 0;
+        double gstTotal = 0;
 
-    for (BillItemRequest itemRequest : request.getItems()) {
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            throw new RuntimeException("Bill items are empty");
+        }
 
-        BillItem item = new BillItem();
+        for (BillItemRequest itemRequest : request.getItems()) {
 
-        double itemSubtotal =
-                itemRequest.getUnitPrice()
-                * itemRequest.getQuantity();
+            BillItem item = new BillItem();
 
-        double gst =
-                itemSubtotal * 0.12;
+            double baseAmount = itemRequest.getUnitPrice() * itemRequest.getQuantity();
+            double gst = baseAmount * 0.12;
+            double itemTotal = baseAmount + gst;
 
-        double itemTotal =
-                itemSubtotal + gst;
+            item.setMedicineName(itemRequest.getMedicineName());
+            item.setQuantity(itemRequest.getQuantity());
+            item.setUnitPrice(itemRequest.getUnitPrice());
+            item.setGst(gst);
+            item.setTotalPrice(itemTotal);
+            item.setBill(bill);
 
-        item.setMedicineName(
-                itemRequest.getMedicineName()
-        );
+            bill.getItems().add(item);
 
-        item.setQuantity(
-                itemRequest.getQuantity()
-        );
+            total += itemTotal;
+            gstTotal += gst;
+        }
 
-        item.setUnitPrice(
-                itemRequest.getUnitPrice()
-        );
+        total = total - request.getDiscount();
 
-        item.setGst(gst);
+        if (total < 0) {
+            total = 0;
+        }
 
-        item.setTotalPrice(itemTotal);
+        bill.setTotalAmount(total);
+        bill.setGstAmount(gstTotal);
 
-        item.setBill(bill);
-
-        bill.getItems().add(item);
-
-        total += itemTotal;
-
-        gstTotal += gst;
+        return billRepository.save(bill);
     }
 
-    total =
-            total - request.getDiscount();
-
-    bill.setTotalAmount(total);
-
-    bill.setGstAmount(gstTotal);
-
-    bill.setLoyaltyPointsEarned(
-            (int) (total / 100)
-    );
-
-    return billRepository.save(bill);
-}
     public Bill getBill(Long id) {
         return billRepository.findById(id).orElse(null);
+    }
+
+    public Double getTotalSales() {
+        Double total = billRepository.getTotalSales();
+        return total == null ? 0.0 : total;
+    }
+
+    public Long getTotalBills() {
+        Long count = billRepository.getTotalBills();
+        return count == null ? 0 : count;
     }
 }
