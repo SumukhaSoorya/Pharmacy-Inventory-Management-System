@@ -1,7 +1,7 @@
 # Pharmacy Inventory Management System
 
 ## Overview 
-A modern full-stack Pharmacy Inventory Management System developed using Spring Boot, MySQL, Thymeleaf, Bootstrap and JWT Authentication.
+A modern full-stack Pharmacy Inventory Management System developed using Spring Boot, MySQL, Thymeleaf, Bootstrap Spring Security.
 
 ## Features
 - Medicine Management
