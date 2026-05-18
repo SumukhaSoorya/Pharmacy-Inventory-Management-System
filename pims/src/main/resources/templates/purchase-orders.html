@@ -39,11 +39,12 @@
     <div th:if="${success != null}" class="alert alert-success">
         Purchase order placed successfully.
     </div>
+
     <div th:if="${autoCreated != null}" class="alert alert-info">
-    Auto reorder completed.
-    Draft purchase orders created:
-    <b th:text="${autoCreated}">0</b>
-</div>
+        Auto reorder completed.
+        Draft purchase orders created:
+        <b th:text="${autoCreated}">0</b>
+    </div>
 
     <div th:if="${error != null}" class="alert alert-danger">
         Could not place purchase order. Please select supplier and try again.
@@ -104,7 +105,7 @@
                 </div>
 
                 <div class="col-md-2 d-flex align-items-end">
-                    <button class="btn btn-success w-100">
+                    <button type="submit" class="btn btn-success w-100">
                         Place Order
                     </button>
                 </div>
@@ -130,7 +131,6 @@
                 <th>Qty</th>
                 <th>Total</th>
                 <th>Status</th>
-                <th>Factory Remark</th>
                 <th>Action</th>
             </tr>
             </thead>
@@ -138,23 +138,25 @@
             <tbody>
 
             <tr th:if="${#lists.isEmpty(orders)}">
-                <td colspan="8" class="text-center text-muted">
+                <td colspan="7" class="text-center text-muted">
                     No purchase orders placed yet.
                 </td>
             </tr>
 
             <tr th:each="o : ${orders}">
 
-                <td th:text="${o.id}"></td>
+                <td th:text="${o.id}">1</td>
 
-                <td th:text="${o.supplier != null ? o.supplier.name : 'No Supplier'}"></td>
+                <td th:text="${o.supplier != null ? o.supplier.name : 'No Supplier'}">
+                    Supplier
+                </td>
 
-                <td th:text="${o.medicineName}"></td>
+                <td th:text="${o.medicineName}">Medicine</td>
 
-                <td th:text="${o.quantity}"></td>
+                <td th:text="${o.quantity}">0</td>
 
                 <td>
-                    ₹<span th:text="${o.totalAmount}"></span>
+                    ₹<span th:text="${o.totalAmount}">0</span>
                 </td>
 
                 <td>
@@ -182,21 +184,44 @@
                           class="badge bg-success">
                         Received
                     </span>
-                </td>
 
-                <td th:text="${o.factoryRemark != null ? o.factoryRemark : '-'}"></td>
+                    <span th:if="${o.status == 'Cancelled'}"
+                          class="badge bg-secondary">
+                        Cancelled
+                    </span>
+
+                    <span th:if="${o.status == null}"
+                          class="badge bg-warning text-dark">
+                        Pending
+                    </span>
+                </td>
 
                 <td>
                     <form th:if="${o.status == 'Dispatched'}"
                           th:action="@{'/purchase-orders/' + ${o.id} + '/received'}"
-                          method="post">
+                          method="post"
+                          style="display:inline;">
 
-                        <button class="btn btn-success btn-sm">
+                        <button type="submit"
+                                class="btn btn-success btn-sm">
                             Mark Received
                         </button>
+
                     </form>
 
-                    <span th:if="${o.status != 'Dispatched'}"
+                    <form th:if="${o.status == 'Pending'}"
+                          th:action="@{'/purchase-orders/' + ${o.id} + '/cancel'}"
+                          method="post"
+                          style="display:inline;">
+
+                        <button type="submit"
+                                class="btn btn-warning btn-sm">
+                            Cancel
+                        </button>
+
+                    </form>
+
+                    <span th:if="${o.status != 'Dispatched' and o.status != 'Pending'}"
                           class="text-muted">
                         No action
                     </span>

@@ -1,15 +1,13 @@
 package com.pims.pims.controller;
 
+import com.pims.pims.model.PurchaseOrder;
+import com.pims.pims.model.Supplier;
+import com.pims.pims.service.PurchaseOrderService;
+import com.pims.pims.service.SupplierService;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import com.pims.pims.service.PurchaseOrderService;
-import com.pims.pims.service.StockService;
-import com.pims.pims.service.SupplierService;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/purchase-orders")
@@ -17,53 +15,68 @@ public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
     private final SupplierService supplierService;
-    private final StockService stockService;
 
     public PurchaseOrderController(PurchaseOrderService purchaseOrderService,
-                                   SupplierService supplierService,
-                                   StockService stockService) {
+                                   SupplierService supplierService) {
         this.purchaseOrderService = purchaseOrderService;
         this.supplierService = supplierService;
-        this.stockService = stockService;
     }
 
     @GetMapping
-    public String purchaseOrders(Model model,
-                                 @RequestParam(required = false) String success,
-                                 @RequestParam(required = false) String autoCreated) {
+    public String purchaseOrders(Model model) {
 
         model.addAttribute("orders", purchaseOrderService.getAll());
         model.addAttribute("suppliers", supplierService.getAll());
-        model.addAttribute("success", success);
-        model.addAttribute("autoCreated", autoCreated);
 
         return "purchase-orders";
     }
 
     @PostMapping("/save")
-    public String saveOrder(@RequestParam Long supplierId,
-                            @RequestParam String medicineName,
-                            @RequestParam int quantity,
-                            @RequestParam double totalAmount) {
+    public String savePurchaseOrder(@RequestParam Long supplierId,
+                                    @RequestParam String medicineName,
+                                    @RequestParam Integer quantity,
+                                    @RequestParam Double totalAmount) {
 
-        purchaseOrderService.createOrder(
-                supplierId,
-                medicineName,
-                quantity,
-                totalAmount
-        );
+        Supplier supplier = supplierService.getById(supplierId);
 
-        return "redirect:/purchase-orders?success=order-placed";
+        if (supplier == null) {
+            return "redirect:/purchase-orders?error=true";
+        }
+
+        PurchaseOrder purchaseOrder = new PurchaseOrder();
+
+        purchaseOrder.setSupplier(supplier);
+        purchaseOrder.setMedicineName(medicineName);
+        purchaseOrder.setQuantity(quantity);
+        purchaseOrder.setTotalAmount(totalAmount);
+        purchaseOrder.setStatus("Pending");
+
+        purchaseOrderService.save(purchaseOrder);
+
+        return "redirect:/purchase-orders?success=true";
     }
 
-    @PostMapping("/auto-reorder")
-    public String autoReorder() {
+    @PostMapping("/{id}/received")
+    public String markReceived(@PathVariable Long id) {
 
-        int created =
-                purchaseOrderService.autoCreateReorderDrafts(
-                        stockService.getLowStock()
-                );
+        purchaseOrderService.updateStatus(id, "Received");
 
-        return "redirect:/purchase-orders?autoCreated=" + created;
+        return "redirect:/purchase-orders";
+    }
+
+    @PostMapping("/{id}/cancel")
+    public String cancelOrder(@PathVariable Long id) {
+
+        purchaseOrderService.updateStatus(id, "Cancelled");
+
+        return "redirect:/purchase-orders";
+    }
+
+    @PostMapping("/{id}/delete")
+    public String deleteOrder(@PathVariable Long id) {
+
+        purchaseOrderService.deleteById(id);
+
+        return "redirect:/purchase-orders";
     }
 }
