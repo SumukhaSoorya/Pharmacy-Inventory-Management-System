@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-
-    <title>Sales Reports</title>
+    <title>PIMS Reports</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
           rel="stylesheet">
@@ -10,208 +9,259 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-
-        body{
-            background:#eef2f7;
+        body {
+            background: #eef2f7;
         }
 
-        .report-card{
-            border:none;
-            border-radius:20px;
-            color:white;
-            padding:25px;
+        .report-card {
+            border: none;
+            border-radius: 20px;
         }
 
-        .sales{
-            background:linear-gradient(135deg,#2563eb,#1d4ed8);
+        .small-chart-box {
+            height: 280px;
+            max-height: 280px;
         }
 
-        .gst{
-            background:linear-gradient(135deg,#16a34a,#15803d);
+        canvas {
+            max-height: 280px;
         }
-
-        .bills{
-            background:linear-gradient(135deg,#dc2626,#b91c1c);
-        }
-
     </style>
-
 </head>
 
 <body>
 
-<div class="container-fluid p-4">
+<div class="container-fluid mt-4 px-4">
 
-    <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <div>
-
-            <h2>📊 Sales Analytics</h2>
-
+            <h2 class="fw-bold">📊 Reports & Analytics</h2>
             <p class="text-muted">
-
-                Pharmacy business insights
-
+                Real-time report generated from bills, stock and medicine records
             </p>
-
         </div>
 
-        <a href="/dashboard"
-           class="btn btn-dark">
-
+        <a href="/dashboard" class="btn btn-dark">
             Dashboard
-
         </a>
 
     </div>
 
-    <!-- CARDS -->
-    <div class="row">
+    <!-- SUMMARY CARDS -->
+    <div class="row g-4 mb-4">
 
-        <!-- SALES -->
-        <div class="col-md-4">
-
-            <div class="report-card sales shadow">
-
-                <h5>Total Sales</h5>
-
-                <h2>
-
-                    ₹<span th:text="${sales}"></span>
-
-                </h2>
-
+        <div class="col-md-3">
+            <div class="card report-card shadow p-4 bg-primary text-white">
+                <h6>Total Sales</h6>
+                <h2>₹<span th:text="${totalSales != null ? totalSales : 0}">0</span></h2>
             </div>
-
         </div>
 
-        <!-- GST -->
-        <div class="col-md-4">
-
-            <div class="report-card gst shadow">
-
-                <h5>Total GST</h5>
-
-                <h2>
-
-                    ₹<span th:text="${gst}"></span>
-
-                </h2>
-
+        <div class="col-md-3">
+            <div class="card report-card shadow p-4 bg-success text-white">
+                <h6>Total Bills</h6>
+                <h2 th:text="${totalBills != null ? totalBills : 0}">0</h2>
             </div>
-
         </div>
 
-        <!-- BILLS -->
-        <div class="col-md-4">
-
-            <div class="report-card bills shadow">
-
-                <h5>Total Bills</h5>
-
-                <h2>
-
-                    <span th:text="${bills}"></span>
-
-                </h2>
-
+        <div class="col-md-3">
+            <div class="card report-card shadow p-4 bg-warning text-dark">
+                <h6>Total GST</h6>
+                <h2>₹<span th:text="${totalGst != null ? totalGst : 0}">0</span></h2>
             </div>
+        </div>
 
+        <div class="col-md-3">
+            <div class="card report-card shadow p-4 bg-info text-dark">
+                <h6>Available Stock</h6>
+                <h2 th:text="${availableStock != null ? availableStock : 0}">0</h2>
+            </div>
         </div>
 
     </div>
 
-    <!-- CHART -->
-    <div class="card shadow border-0 mt-5 p-4">
+    <!-- STOCK CARDS -->
+    <div class="row g-4 mb-4">
 
-        <h4>
+        <div class="col-md-4">
+            <div class="card report-card shadow p-4 bg-danger text-white">
+                <h6>Expired Medicines</h6>
+                <h2 th:text="${expiredCount != null ? expiredCount : 0}">0</h2>
+            </div>
+        </div>
 
-            📈 Monthly Sales Trend
+        <div class="col-md-4">
+            <div class="card report-card shadow p-4 bg-secondary text-white">
+                <h6>Expiring Soon</h6>
+                <h2 th:text="${expiringSoonCount != null ? expiringSoonCount : 0}">0</h2>
+            </div>
+        </div>
 
-        </h4>
-
-        <canvas id="salesChart"></canvas>
+        <div class="col-md-4">
+            <div class="card report-card shadow p-4 bg-dark text-white">
+                <h6>Low Stock Medicines</h6>
+                <h2 th:text="${lowStockCount != null ? lowStockCount : 0}">0</h2>
+            </div>
+        </div>
 
     </div>
 
-    <!-- PAYMENT ANALYTICS -->
-    <div class="card shadow border-0 mt-4 p-4">
+    <!-- CHARTS -->
+    <div class="row g-4">
 
-        <h4>
+        <div class="col-md-6">
+            <div class="card report-card shadow p-4">
+                <h5>💰 Payment Mode Analysis</h5>
+                <p class="text-muted">
+                    Based on generated bills
+                </p>
 
-            💳 Payment Analytics
+                <div class="small-chart-box">
+                    <canvas id="paymentChart"></canvas>
+                </div>
+            </div>
+        </div>
 
-        </h4>
+        <div class="col-md-6">
+            <div class="card report-card shadow p-4">
+                <h5>📦 Stock Health Analysis</h5>
+                <p class="text-muted">
+                    Based on current stock data
+                </p>
 
-        <canvas id="paymentChart"></canvas>
+                <div class="small-chart-box">
+                    <canvas id="stockChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SIMPLE REPORT TABLE -->
+    <div class="card report-card shadow p-4 mt-4">
+
+        <h5>📋 Report Summary</h5>
+
+        <table class="table table-bordered mt-3">
+
+            <thead class="table-dark">
+            <tr>
+                <th>Report Item</th>
+                <th>Value</th>
+                <th>Meaning</th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            <tr>
+                <td>Total Sales</td>
+                <td>₹<span th:text="${totalSales != null ? totalSales : 0}">0</span></td>
+                <td>Total revenue generated from billing</td>
+            </tr>
+
+            <tr>
+                <td>Total GST</td>
+                <td>₹<span th:text="${totalGst != null ? totalGst : 0}">0</span></td>
+                <td>Total GST collected from bills</td>
+            </tr>
+
+            <tr>
+                <td>Total Bills</td>
+                <td th:text="${totalBills != null ? totalBills : 0}">0</td>
+                <td>Total number of bills generated</td>
+            </tr>
+
+            <tr>
+                <td>Available Stock</td>
+                <td th:text="${availableStock != null ? availableStock : 0}">0</td>
+                <td>Total medicine quantity available in inventory</td>
+            </tr>
+
+            <tr>
+                <td>Expired Medicines</td>
+                <td th:text="${expiredCount != null ? expiredCount : 0}">0</td>
+                <td>Medicines already expired</td>
+            </tr>
+
+            <tr>
+                <td>Expiring Soon</td>
+                <td th:text="${expiringSoonCount != null ? expiringSoonCount : 0}">0</td>
+                <td>Medicines nearing expiry date</td>
+            </tr>
+
+            <tr>
+                <td>Low Stock</td>
+                <td th:text="${lowStockCount != null ? lowStockCount : 0}">0</td>
+                <td>Medicines below reorder level</td>
+            </tr>
+
+            </tbody>
+
+        </table>
 
     </div>
 
 </div>
 
-<script>
+<script th:inline="javascript">
+    const cashBills = Number(/*[[${cashBills != null ? cashBills : 0}]]*/ 0);
+    const cardBills = Number(/*[[${cardBills != null ? cardBills : 0}]]*/ 0);
+    const upiBills = Number(/*[[${upiBills != null ? upiBills : 0}]]*/ 0);
 
-    // SALES CHART
-    new Chart(document.getElementById("salesChart"), {
+    const availableStock = Number(/*[[${availableStock != null ? availableStock : 0}]]*/ 0);
+    const expiredCount = Number(/*[[${expiredCount != null ? expiredCount : 0}]]*/ 0);
+    const expiringSoonCount = Number(/*[[${expiringSoonCount != null ? expiringSoonCount : 0}]]*/ 0);
+    const lowStockCount = Number(/*[[${lowStockCount != null ? lowStockCount : 0}]]*/ 0);
 
-        type:'line',
+    const paymentData = [cashBills, cardBills, upiBills];
+    const stockData = [availableStock, expiredCount, expiringSoonCount, lowStockCount];
 
-        data:{
-
-            labels:[
-                'Jan',
-                'Feb',
-                'Mar',
-                'Apr',
-                'May',
-                'Jun'
-            ],
-
-            datasets:[{
-
-                label:'Sales',
-
-                data:[
-                    12000,
-                    19000,
-                    15000,
-                    25000,
-                    22000,
-                    30000
-                ],
-
-                borderWidth:3
-
-            }]
-        }
-    });
-
-    // PAYMENT CHART
     new Chart(document.getElementById("paymentChart"), {
-
-        type:'doughnut',
-
-        data:{
-
-            labels:[
-                'Cash',
-                'Card',
-                'UPI'
-            ],
-
-            datasets:[{
-
-                data:[
-                    45,
-                    25,
-                    30
-                ]
-
+        type: "doughnut",
+        data: {
+            labels: ["Cash", "Card", "UPI"],
+            datasets: [{
+                data: paymentData,
+                borderWidth: 2
             }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "60%",
+            plugins: {
+                legend: {
+                    position: "bottom"
+                }
+            }
         }
     });
 
+    new Chart(document.getElementById("stockChart"), {
+        type: "bar",
+        data: {
+            labels: ["Available", "Expired", "Expiring Soon", "Low Stock"],
+            datasets: [{
+                label: "Stock Count",
+                data: stockData,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
 </script>
 
 </body>
