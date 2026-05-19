@@ -20,6 +20,12 @@
             font-size: 13px;
             padding: 8px 12px;
         }
+
+        .smart-box {
+            background: linear-gradient(135deg, #e0f2fe, #f8fafc);
+            border: 1px solid #bae6fd;
+            border-radius: 20px;
+        }
     </style>
 </head>
 
@@ -41,13 +47,40 @@
     </div>
 
     <div th:if="${autoCreated != null}" class="alert alert-info">
-        Auto reorder completed.
-        Draft purchase orders created:
+        Smart reorder completed.
+        Purchase orders created:
         <b th:text="${autoCreated}">0</b>
     </div>
 
     <div th:if="${error != null}" class="alert alert-danger">
-        Could not place purchase order. Please select supplier and try again.
+        Could not place purchase order. Please make sure at least one supplier exists.
+    </div>
+
+    <!-- SMART REORDER ASSISTANT -->
+    <div class="card smart-box shadow p-4 mb-5">
+
+        <div class="d-flex justify-content-between align-items-center">
+
+            <div>
+                <h4 class="mb-2">🤖 Smart Reorder Assistant</h4>
+                <p class="text-muted mb-0">
+                    Automatically creates purchase orders for medicines where quantity is below reorder level.
+                </p>
+            </div>
+
+            <form action="/purchase-orders/auto-reorder"
+                  method="post"
+                  style="display:inline;">
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    Run Smart Reorder
+                </button>
+
+            </form>
+
+        </div>
+
     </div>
 
     <!-- CREATE ORDER -->
