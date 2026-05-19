@@ -1,104 +1,81 @@
-DATABASES TABLES:
+USE pims_db;
 
-1. USERS
+
 CREATE TABLE users (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(50) UNIQUE NOT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    role ENUM('ROLE_ADMIN','ROLE_FACTORY') NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_login TIMESTAMP
+    role VARCHAR(50) DEFAULT 'admin',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-2. SUPPLIERS
+
 CREATE TABLE suppliers (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
-    contact VARCHAR(15),
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    supplier_name VARCHAR(150) NOT NULL,
+    phone VARCHAR(20),
     email VARCHAR(100),
     address TEXT,
-    drug_license_no VARCHAR(50) UNIQUE
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-3. MEDICINES
-CREATE TABLE medicines (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
-    manufacturer VARCHAR(100),
-    category VARCHAR(50),
-    dosage_form VARCHAR(50),
-    prescription_required BOOLEAN,
-    barcode VARCHAR(100) UNIQUE,
-    gst_percent DECIMAL(5,2)
-);
-4. STOCK (IMPORTANT RELATION TABLE)
-CREATE TABLE stock (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    medicine_id BIGINT,
-    batch_no VARCHAR(50),
-    quantity INT,
-    reorder_level INT,
-    purchase_price DECIMAL(10,2),
-    selling_price DECIMAL(10,2),
-    expiry_date DATE,
-    supplier_id BIGINT,
 
-    FOREIGN KEY (medicine_id) REFERENCES medicines(id) ON DELETE CASCADE,
-    FOREIGN KEY (supplier_id) REFERENCES suppliers(id)
-);
-5. CUSTOMERS
 CREATE TABLE customers (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100),
-    phone VARCHAR(15),
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_name VARCHAR(150) NOT NULL,
+    phone VARCHAR(20),
     email VARCHAR(100),
-    loyalty_points INT DEFAULT 0
+    address TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-6. BILLS
+
+CREATE TABLE medicines (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    medicine_name VARCHAR(150) NOT NULL,
+    company_name VARCHAR(150),
+    category VARCHAR(100),
+    quantity INT NOT NULL DEFAULT 0,
+    price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    expiry_date DATE,
+    supplier_id INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_medicine_supplier
+    FOREIGN KEY (supplier_id)
+    REFERENCES suppliers(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+);
+
 CREATE TABLE bills (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    customer_id BIGINT,
-    user_id BIGINT,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT NULL,
     bill_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    total_amount DECIMAL(10,2),
-    discount DECIMAL(10,2),
-    gst_amount DECIMAL(10,2),
-    payment_mode VARCHAR(20),
-    status VARCHAR(20),
+    total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    payment_mode VARCHAR(50) DEFAULT 'Cash',
 
-    FOREIGN KEY (customer_id) REFERENCES customers(id),
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    CONSTRAINT fk_bill_customer
+    FOREIGN KEY (customer_id)
+    REFERENCES customers(id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
 );
-7. BILL ITEMS
+
 CREATE TABLE bill_items (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    bill_id BIGINT,
-    stock_id BIGINT,
-    quantity INT,
-    unit_price DECIMAL(10,2),
-    total_price DECIMAL(10,2),
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    bill_id INT NOT NULL,
+    medicine_id INT NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    total DECIMAL(10,2) NOT NULL,
 
-    FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE,
-    FOREIGN KEY (stock_id) REFERENCES stock(id)
-);
-8. PURCHASE ORDERS
-CREATE TABLE purchase_orders (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    supplier_id BIGINT,
-    order_date DATE,
-    status VARCHAR(20),
-    total_amount DECIMAL(10,2),
+    CONSTRAINT fk_billitem_bill
+    FOREIGN KEY (bill_id)
+    REFERENCES bills(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
 
-    FOREIGN KEY (supplier_id) REFERENCES suppliers(id)
-);
-9. RETURNS
-CREATE TABLE returns (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    bill_id BIGINT,
-    medicine_id BIGINT,
-    quantity INT,
-    reason VARCHAR(100),
-    return_date DATE,
-    refund_amount DECIMAL(10,2),
-
-    FOREIGN KEY (bill_id) REFERENCES bills(id),
-    FOREIGN KEY (medicine_id) REFERENCES medicines(id)
+    CONSTRAINT fk_billitem_medicine
+    FOREIGN KEY (medicine_id)
+    REFERENCES medicines(id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE
 );
